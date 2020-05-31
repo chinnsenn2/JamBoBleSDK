@@ -1,0 +1,100 @@
+ext {
+    android = [
+            compileSdkVersion: 29,
+            buildToolsVersion: '28.0.3',
+            minSdkVersion    : 17,
+            targetSdkVersion : 29,
+    ]
+
+    version = [
+            supportVersion  : '28.0.0',
+            retrofitVersion : '2.6.2',
+            okHttpVersion   : '3.12.3',
+            glideVersion    : '4.11.0',
+            rxJavaVersion   : '2.2.13',
+            rxAndroidVersion: '2.1.1',
+    ]
+
+    dependencies = [
+            appcompatx                   : 'androidx.appcompat:appcompat:1.1.0',
+            core_ktx                     : 'androidx.core:core-ktx:1.2.0',
+            recyclerviewx                : 'androidx.recyclerview:recyclerview:1.0.0',
+            recyclerviewx_selection      : 'androidx.recyclerview:recyclerview-selection:1.0.0',
+            annotationx                  : 'androidx.annotation:annotation:1.1.0',
+            design                       : 'com.google.android.material:material:1.0.0',
+
+            cardview                     : "androidx.cardview:cardview:1.0.0",
+
+            multidex                     : 'androidx.multidex:multidex:2.0.0',
+
+            getui                        : 'com.getui:sdk:2.13.3.0',
+
+            //测试
+            junit                        : 'junit:junit:4.12',
+            //覆盖率
+            robolectric                  : 'org.robolectric:robolectric:3.0-rc3',
+
+            //七牛
+            qiniu_android_sdk            : 'com.qiniu:qiniu-android-sdk:7.3.15',
+            //统计
+            piwik                        : 'org.piwik.sdk:piwik-sdk:1.0.2',
+            //Walle 多渠道
+            walle                        : 'com.meituan.android.walle:library:1.1.5',
+            //妙健康
+            miaoplus                     : 'cn.funtalk.miao.miaoplus:miaoplus:1.3.41-SNAPSHOT',
+            //日期
+            joda_time                    : 'joda-time:joda-time:2.9.4',
+            //glide
+            glide                        : "com.github.bumptech.glide:glide:${version.glideVersion}",
+            glide_compiler               : "com.github.bumptech.glide:compiler:${version.glideVersion}",
+            //json
+            gson                         : 'com.google.code.gson:gson:2.8.2',
+            customactivityoncrash        : 'cat.ereza:customactivityoncrash:2.3.0',
+
+            //rxjava2
+            rxjava2                      : "io.reactivex.rxjava2:rxjava:${version.rxJavaVersion}",
+            rxandroid2                   : "io.reactivex.rxjava2:rxandroid:${version.rxAndroidVersion}",
+            //圆形
+            circleimageview              : 'de.hdodenhof:circleimageview:3.0.0',
+
+            //leakcanary
+            leakcanary_android           : 'com.squareup.leakcanary:leakcanary-android:2.0-beta-3',
+            doraemonkit                  : 'com.didichuxing.doraemonkit:doraemonkit:2.2.2',
+            doraemonkit_no_op            : 'com.didichuxing.doraemonkit:doraemonkit-no-op:2.2.2',
+            doraemonkit_leakcanary       : 'com.didichuxing.doraemonkit:doraemonkit-leakcanary:2.2.2',
+            stetho                       : 'com.facebook.stetho:stetho:1.5.0',
+            stetho_urlconnection         : 'com.facebook.stetho:stetho-urlconnection:1.5.0',
+            autosize                     : 'me.jessyan:autosize:1.1.2',
+            verticalbannerview           : 'com.github.Rowandjj:VerticalBannerView:1.0',
+            growingio                    : 'com.growingio.android:vds-android-agent:autotrack-2.8.6@aar',
+            constraintlayout             : 'androidx.constraintlayout:constraintlayout:1.1.3',
+            baserecyclerviewadapterhelper: 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30',
+            pictureselector              : 'com.github.LuckSiege.PictureSelector:picture_library:v2.5.3',
+            smartrefreshlayout           : 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.2',
+            kotlin                       : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version",
+            toastutils                   : 'com.github.Blincheng:EToast2:v2.2.1',
+            cardio                       : 'io.card:android-sdk:5.5.1',
+            logger                       : 'com.orhanobut:logger:2.2.0',
+
+            //retrofit
+            retrofit                     : "com.squareup.retrofit2:retrofit:${version.retrofitVersion}",
+            retrofit_converter_gson      : "com.squareup.retrofit2:converter-gson:${version.retrofitVersion}",
+            retrofit_adapter_rxjava2     : "com.squareup.retrofit2:adapter-rxjava2:${version."retrofitVersion"}",
+            retrofiturlmanager           : 'me.jessyan:retrofit-url-manager:1.4.0',
+
+            //okhttp
+            okhttp3                      : "com.squareup.okhttp3:okhttp:${version.okHttpVersion}",
+            okhttp3_logging_interceptor  : "com.squareup.okhttp3:logging-interceptor:${version.okHttpVersion}",
+            calendarview                 : 'com.haibin:calendarview:3.6.2',
+            eventbus                     : 'org.greenrobot:eventbus:3.1.1',
+            skeleton                     : 'com.ethanhua:skeleton:1.1.2',
+            shimmerlayout                : 'io.supercharge:shimmerlayout:2.1.0',
+            lighter                      : 'me.samlss:lighter:1.0.3',
+            wechat_sdk                   : 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+',
+            jsbridge                     : "com.github.lzyzsd:jsbridge:1.0.4",
+            zxing                        : "com.google.zxing:core:3.3.3",//3.4.0 需要 API24 以上，否则会因为没有 Array#sort() 方法而报错
+            compresshelper               : 'com.github.nanchen2251:CompressHelper:1.0.5',
+            viewpager2                   : 'androidx.viewpager2:viewpager2:1.0.0',
+
+    ]
+}
