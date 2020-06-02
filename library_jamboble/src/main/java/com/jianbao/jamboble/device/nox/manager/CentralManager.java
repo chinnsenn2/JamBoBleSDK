@@ -6,7 +6,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.jianbao.jamboble.MainAppLike;
+import com.jianbao.jamboble.App;
 import com.jianbao.jamboble.device.nox.BaseCallback;
 import com.jianbao.jamboble.device.nox.ConnectionState;
 import com.jianbao.jamboble.device.nox.Device;
@@ -26,7 +26,6 @@ import com.jianbao.jamboble.device.nox.utils.SceneUtils;
 
 import java.util.ArrayList;
 
-import static com.jianbao.doctor.bluetooth.device.nox.utils.SceneUtils.SLEEP_SCENE_ID;
 
 /**
  * Created by Hao on 2016/8/8.
@@ -70,7 +69,7 @@ public class CentralManager extends DeviceManager implements ICentralManager {
         if (sInstance == null) {
             sInstance = new CentralManager();
         }
-        sInstance.mContext = MainAppLike.getContext();
+        sInstance.mContext = App.context;
         sInstance.setSleepAidDevice(sleepAidDevice);
         sInstance.setMonitorDevice(monitorDevice);
         //初始化AppManager ，防止在子线程内初始化
@@ -241,13 +240,13 @@ public class CentralManager extends DeviceManager implements ICentralManager {
                 NoxWorkMode workMode = (NoxWorkMode) callbackData.getResult();
                 // Log.d(TAG, " workMode sceneStatus:" + GlobalInfo.getSceneStatus() + ",mCurSleepAidAlbumMusic:" + mCurSleepAidAlbumMusic+"===workMode===："+workMode);
                 if (SceneUtils.hasNox()) {
-                    boolean sleepscenRun = workMode.isSceneRun(SLEEP_SCENE_ID);
+                    boolean sleepscenRun = workMode.isSceneRun(SceneUtils.SLEEP_SCENE_ID);
                     
                     if (sleepscenRun) {
                         setSceneStatus(sleepscenRun);
                     } else {
                         if (NoxGlobalInfo.getSceneStatus() && workMode.alarmStatus == 4) {//以前是启动，现在是停止
-                            if (SceneUtils.getMonitorDeviceType(SLEEP_SCENE_ID) == DeviceType.DEVICE_TYPE_PHONE) {
+                            if (SceneUtils.getMonitorDeviceType(SceneUtils.SLEEP_SCENE_ID) == DeviceType.DEVICE_TYPE_PHONE) {
                                 collectStop();
                             }
                             setSceneStatus(sleepscenRun);
@@ -297,10 +296,10 @@ public class CentralManager extends DeviceManager implements ICentralManager {
             }
         } else if (callbackData.getType() == ICentralManager.TYPE_METHOD_SCENE_STOP) {
             Log.d(TAG, " scene stop:" + callbackData);
-            if ((int) callbackData.getResult() == SLEEP_SCENE_ID) {
+            if ((int) callbackData.getResult() == SceneUtils.SLEEP_SCENE_ID) {
                 boolean stopSceneRestult = callbackData.isSuccess();
                 //手机+nox的时候，停止场景，只要第一步手机停止采集成功就认为是成功，这个时候去拿报告，这种情况特殊处理
-                if (!stopSceneRestult && SceneUtils.hasNox() && SceneUtils.getMonitorDeviceType(SLEEP_SCENE_ID) == DeviceType.DEVICE_TYPE_PHONE) {
+                if (!stopSceneRestult && SceneUtils.hasNox() && SceneUtils.getMonitorDeviceType(SceneUtils.SLEEP_SCENE_ID) == DeviceType.DEVICE_TYPE_PHONE) {
                     stopSceneRestult = true;
                     callbackData.setStatus(CallbackData.STATUS_OK);
                 }

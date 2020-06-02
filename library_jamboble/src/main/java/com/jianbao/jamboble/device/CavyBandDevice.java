@@ -3,7 +3,7 @@ package com.jianbao.jamboble.device;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.jianbao.jamboble.LogUtils;
+import com.jianbao.jamboble.utils.LogUtils;
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.CavyBandData;
 import com.jianbao.jamboble.data.CavyBatteryData;
@@ -149,7 +149,7 @@ public class CavyBandDevice extends BTDevice {
                     CavyRealData realData = calculateSleep(sleepList);
                     realData.yesTodayTotalStep = yesTodayTotalStep;
                     realData.todayTotalStep = todayTotalStep;
-                    realData.setDeviceID(getBTDeviceID());
+                    realData.deviceID = getBTDeviceID();
                     LogUtils.d("Test", "displayData yesTodayTotalStep = " + yesTodayTotalStep
                             + ", todayTotalStep = " + todayTotalStep);
                     return realData;

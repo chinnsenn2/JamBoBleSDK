@@ -33,7 +33,7 @@ public class SannuoBloodSugar extends BTDevice {
 				float bloodSugar = (float) (((0xFF00 & (data[11] << 8)) | data[12]) / 10.0);
 				BloodSugarData btData = new BloodSugarData();
 				btData.bloodSugar = bloodSugar;
-				btData.setDeviceID(getBTDeviceID());
+				btData.deviceID = getBTDeviceID();
 				return btData;
 			}
 		}

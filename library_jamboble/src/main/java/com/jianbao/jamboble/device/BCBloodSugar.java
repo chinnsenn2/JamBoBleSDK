@@ -1,6 +1,6 @@
 package com.jianbao.jamboble.device;
 
-import com.jianbao.jamboble.ValueCast;
+import com.jianbao.jamboble.utils.ValueCast;
 import com.jianbao.jamboble.data.BloodSugarData;
 
 /**

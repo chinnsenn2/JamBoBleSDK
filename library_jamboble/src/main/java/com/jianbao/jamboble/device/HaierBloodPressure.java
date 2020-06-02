@@ -1,6 +1,5 @@
 package com.jianbao.jamboble.device;
 
-import com.jianbao.jamboble.R;
 import com.jianbao.jamboble.data.BloodPressureData;
 
 /**
@@ -41,7 +40,7 @@ public class HaierBloodPressure extends BTDevice {
 				btData.systolicPressure = systolicPressure;
 				btData.diastolicPressure = diastolicPressure;
 				btData.heartRate = heartRate;
-				btData.setDeviceID(getBTDeviceID());
+				btData.deviceID = getBTDeviceID();
 				return btData;
 			}
 		}
@@ -50,6 +49,6 @@ public class HaierBloodPressure extends BTDevice {
 
 	@Override
 	public int getImageResource() {
-		return R.drawable.blood_pressure_sphygmomanometer_one;
+		return 0;
 	}
 }

@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothProfile;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.jianbao.jamboble.MainAppLike;
+import com.jianbao.jamboble.App;
 import com.jianbao.jamboble.device.nox.BleDevice;
 
 import java.lang.reflect.Method;
@@ -139,7 +139,7 @@ public class BluetoothUtil {
             return;
         }
 
-        adapter.getProfileProxy(MainAppLike.getContext(), new BluetoothProfile.ServiceListener() {
+        adapter.getProfileProxy(App.context, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
                 if(profile == BluetoothProfile.A2DP){

@@ -33,6 +33,8 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.BTWriteData;
 import com.jianbao.jamboble.device.BTDevice;
@@ -41,6 +43,7 @@ import com.jianbao.jamboble.device.OnCallBloodSugar;
 import com.jianbao.jamboble.device.SannuoAnWenBloodSugar;
 import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 import com.jianbao.jamboble.device.oximeter.OximeterHelper;
+import com.jianbao.jamboble.utils.LogUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -59,7 +62,7 @@ public class BTControlManager {
     public interface BTControlListener {
         void onConnectChanged(boolean connected);
 
-        void onDataReceived(BTData data);
+        void onDataReceived(@Nullable BTData data);
 
         void onActionNotification();
 

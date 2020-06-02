@@ -3,12 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 29
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -24,13 +24,27 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation rootProject.ext.dependencies.appcompatx
     implementation rootProject.ext.dependencies.core_ktx
-    annotationProcessor rootProject.ext.dependencies.annotationx
     implementation rootProject.ext.dependencies.logger
     implementation rootProject.ext.dependencies.multidex
+    implementation rootProject.ext.dependencies.gson
+    implementation rootProject.ext.dependencies.kotlin
+    implementation rootProject.ext.dependencies.rxjava2
+    implementation rootProject.ext.dependencies.rxandroid2
+    implementation rootProject.ext.dependencies.DToast
+    implementation rootProject.ext.dependencies.qnscalesdkX
+    annotationProcessor rootProject.ext.dependencies.annotationx
 }

@@ -1,4 +1,4 @@
-package com.jianbao.jamboble;
+package com.jianbao.jamboble.utils;
 
 import java.io.Closeable;
 import java.io.IOException;

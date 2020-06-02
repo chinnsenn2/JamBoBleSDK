@@ -1,7 +1,7 @@
 package com.jianbao.jamboble.device;
 
+import com.jianbao.jamboble.utils.ValueCast;
 import com.jianbao.jamboble.data.UricAcidData;
-import com.jianbao.jamboble.common.ValueCast;
 
 /**
  * 尿酸
@@ -54,7 +54,7 @@ public class BeneCheckUa extends BTDevice {
 				uaData.mHour = hour;
 				uaData.mMinute = minute;
 				uaData.mUricAcid = ValueCast.makePrecision(uaValues, 2);
-				uaData.setDeviceID(getBTDeviceID());
+				uaData.deviceID = getBTDeviceID();
 				return uaData;
 			}
 

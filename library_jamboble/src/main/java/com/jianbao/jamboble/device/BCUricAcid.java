@@ -1,7 +1,7 @@
 package com.jianbao.jamboble.device;
 
+import com.jianbao.jamboble.utils.ValueCast;
 import com.jianbao.jamboble.data.UricAcidData;
-import com.jianbao.jamboble.common.ValueCast;
 
 /**
  * Created by zhangmingyao
@@ -40,7 +40,7 @@ public class BCUricAcid extends BeneCheckThreeInOne{
                     uaData.mHour = hour;
                     uaData.mMinute = minute;
                     uaData.mUricAcid = ValueCast.makePrecision(getResultValue(data), 2);
-                    uaData.setDeviceID(getBTDeviceID());
+                    uaData.deviceID = getBTDeviceID();
                     return uaData;
 
                 }

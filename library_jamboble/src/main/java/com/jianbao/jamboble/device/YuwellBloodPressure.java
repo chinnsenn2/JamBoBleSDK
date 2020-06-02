@@ -44,7 +44,7 @@ public class YuwellBloodPressure extends BTDevice {
             btData.systolicPressure = systolicPressure;
             btData.diastolicPressure = diastolicPressure;
             btData.heartRate = heartRate;
-            btData.setDeviceID(getBTDeviceID());
+            btData.deviceID = getBTDeviceID();
             return btData;
         }
         return null;

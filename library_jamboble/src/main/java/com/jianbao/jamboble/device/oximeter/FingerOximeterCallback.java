@@ -6,7 +6,7 @@ import android.os.Message;
 
 import com.creative.FingerOximeter.IFingerOximeterCallBack;
 import com.creative.base.BaseDate;
-import com.jianbao.jamboble.LogUtils;
+import com.jianbao.jamboble.utils.LogUtils;
 import com.jianbao.jamboble.data.SpO2Data;
 import com.jianbao.jamboble.draw.DrawThreadNW;
 

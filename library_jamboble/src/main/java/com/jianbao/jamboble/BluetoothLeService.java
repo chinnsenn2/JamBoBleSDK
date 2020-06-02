@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import com.jianbao.jamboble.utils.LogUtils;
 import com.orhanobut.logger.Logger;
 
 import java.util.List;

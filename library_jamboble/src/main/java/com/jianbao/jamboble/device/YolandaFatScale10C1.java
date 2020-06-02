@@ -1,7 +1,5 @@
 package com.jianbao.jamboble.device;
 
-import com.jianbao.jamboble.R;
-
 /**
  * 云康宝脂肪称， 型号Yolanda-CS10C1
  * @author 毛晓飞
@@ -18,6 +16,6 @@ public class YolandaFatScale10C1 extends YolandaFatScale {
 
 	@Override
 	public int getImageResource() {
-		return R.drawable.blood_pressure_scale_one;
+		return 0;
 	} 
 }

@@ -1,6 +1,5 @@
 package com.jianbao.jamboble.device;
 
-import com.jianbao.jamboble.R;
 import com.jianbao.jamboble.data.BloodPressureData;
 
 /**
@@ -28,6 +27,6 @@ public class FetalHeartDevice extends BTDevice {
 
     @Override
     public int getImageResource() {
-        return R.drawable.blood_pressure_sphygmomanometer_one;
+        return 0;
     }
 }

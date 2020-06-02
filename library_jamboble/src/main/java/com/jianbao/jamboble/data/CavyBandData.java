@@ -1,7 +1,5 @@
 package com.jianbao.jamboble.data;
 
-import java.io.Serializable;
-
 /**
  * Created by 毛晓飞 on 2016/12/7.
  */
@@ -9,7 +7,7 @@ import java.io.Serializable;
 /**
  * 手环每10分钟生成一条记录，一天最多生成144条记录
  */
-public class CavyBandData extends BTData implements Serializable {
+public class CavyBandData extends BTData {
     /**
      * 1-昨天，2-今天
      */

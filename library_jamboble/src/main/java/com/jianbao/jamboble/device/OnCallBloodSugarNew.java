@@ -91,7 +91,7 @@ public class OnCallBloodSugarNew extends BTDevice {
                     btData.strBloodSugar = str[1];
                     btData.strDate = str[0].substring(2);
                     btData.bloodSugar = calculate(str[1]);
-                    btData.setDeviceID(getBTDeviceID());
+                    btData.deviceID = getBTDeviceID();
                     return btData;
                 }
             }

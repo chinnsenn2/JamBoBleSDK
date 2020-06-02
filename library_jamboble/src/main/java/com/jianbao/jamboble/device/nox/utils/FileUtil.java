@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Environment;
 import android.os.StatFs;
 
-import com.appbase.utils.TimeUtil;
+import com.jianbao.jamboble.utils.TimeUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;

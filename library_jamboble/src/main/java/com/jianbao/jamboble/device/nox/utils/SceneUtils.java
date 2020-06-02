@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.jianbao.jamboble.MainAppLike;
+import com.jianbao.jamboble.App;
 import com.jianbao.jamboble.device.nox.Device;
 import com.jianbao.jamboble.device.nox.DeviceType;
 import com.jianbao.jamboble.device.nox.bean.NoxLight;
@@ -30,8 +30,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static com.jianbao.doctor.bluetooth.device.nox.utils.SPUtils.SP_KEY_SLEEPHELPER_VOLUME;
 
 
 /**
@@ -249,7 +247,7 @@ public class SceneUtils {
 
         if (DeviceType.isNox(sleepHelperDeviceType)) {
             SceneConfigNox sceneConfigNox = new SceneConfigNox();
-            sceneConfigNox.init(Nox2BManager.getInstance(MainAppLike.getContext()).getDevice());
+            sceneConfigNox.init(Nox2BManager.getInstance(App.context).getDevice());
             return sceneConfigNox;
         }
 
@@ -515,7 +513,7 @@ public class SceneUtils {
                             sceneConfigMobile.setMusicFlag(1);
                             NoxGlobalInfo.sleepHelperConfigs.add(sceneConfigMobile);
                             if (getSleepHelpDeviceType(SLEEP_SCENE_ID) == DeviceType.DEVICE_TYPE_PHONE) {
-                                SPUtils.save(SP_KEY_SLEEPHELPER_VOLUME, sceneConfigMobile.getVolume());
+                                SPUtils.save(SPUtils.SP_KEY_SLEEPHELPER_VOLUME, sceneConfigMobile.getVolume());
 //                                SPUtils.save(SP_KEY_FIRST_USER_PHONE_AS_SLEEPAID, false);
                             }
                         }

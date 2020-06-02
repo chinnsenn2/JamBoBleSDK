@@ -1,8 +1,8 @@
 ext {
     android = [
             compileSdkVersion: 29,
-            buildToolsVersion: '28.0.3',
-            minSdkVersion    : 17,
+            buildToolsVersion: '29.0.3',
+            minSdkVersion    : 18,
             targetSdkVersion : 29,
     ]
 
@@ -95,6 +95,8 @@ ext {
             zxing                        : "com.google.zxing:core:3.3.3",//3.4.0 需要 API24 以上，否则会因为没有 Array#sort() 方法而报错
             compresshelper               : 'com.github.nanchen2251:CompressHelper:1.0.5',
             viewpager2                   : 'androidx.viewpager2:viewpager2:1.0.0',
+            qnscalesdkX                  : 'com.github.YolandaQingniu:qnscalesdkX:1.0.0',
+            DToast                       : 'com.github.Dovar66:DToast:1.1.6',
 
     ]
 }

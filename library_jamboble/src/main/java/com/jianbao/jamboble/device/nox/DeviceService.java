@@ -13,7 +13,8 @@ import android.os.PowerManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.appbase.utils.GsonHelper;
+import com.jianbao.jamboble.utils.GsonHelper;
+import com.jianbao.jamboble.utils.PreferenceUtils;
 import com.jianbao.jamboble.device.nox.bean.CallbackData;
 import com.jianbao.jamboble.device.nox.bean.SleepSceneConfig;
 import com.jianbao.jamboble.device.nox.interfaces.IDeviceManager;
@@ -23,7 +24,6 @@ import com.jianbao.jamboble.device.nox.manager.CentralManager;
 import com.jianbao.jamboble.device.nox.manager.Nox2BManager;
 import com.jianbao.jamboble.device.nox.utils.SceneUtils;
 
-import jianbao.PreferenceUtils;
 
 public class DeviceService extends Service {
 
@@ -197,7 +197,9 @@ public class DeviceService extends Service {
     public void acquireWakeLock() {
         if (wakeLock == null) {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Sleepace");
+            if (powerManager != null) {
+                wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Sleepace");
+            }
         }
         wakeLock.acquire();
     }

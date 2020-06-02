@@ -1,12 +1,10 @@
 package com.jianbao.jamboble.data;
 
-import java.io.Serializable;
-
 /**
  * Created by 毛晓飞 on 2016/12/28.
  */
 
-public class CavyRealData extends BTData implements Serializable {
+public class CavyRealData extends BTData{
 
     /**
      * 昨天的运动步数

@@ -14,7 +14,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.appbase.utils.TimeUtil;
+import com.jianbao.jamboble.utils.TimeUtil;
 import com.jianbao.jamboble.device.nox.ConnectionState;
 import com.jianbao.jamboble.device.nox.Device;
 import com.jianbao.jamboble.device.nox.DeviceService;
@@ -34,7 +34,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static com.jianbao.doctor.bluetooth.device.nox.utils.SceneUtils.SLEEP_SCENE_ID;
+import static com.jianbao.jamboble.device.nox.utils.SceneUtils.SLEEP_SCENE_ID;
 
 
 public class AppManager extends DeviceManager implements IMonitorManager, ISleepAidManager {

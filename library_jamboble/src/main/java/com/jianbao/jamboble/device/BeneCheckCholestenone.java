@@ -1,10 +1,10 @@
 package com.jianbao.jamboble.device;
 
+import com.jianbao.jamboble.utils.ValueCast;
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.BloodSugarData;
 import com.jianbao.jamboble.data.CholestenoneData;
 import com.jianbao.jamboble.data.UricAcidData;
-import com.jianbao.jamboble.common.ValueCast;
 
 public class BeneCheckCholestenone extends BeneCheckThreeInOne {
     public BeneCheckCholestenone() {
@@ -29,7 +29,7 @@ public class BeneCheckCholestenone extends BeneCheckThreeInOne {
                     btData.mday = day;
                     btData.mHour = hour;
                     btData.mMinute = minute;
-                    btData.setDeviceID(getBTDeviceID());
+                    btData.deviceID = getBTDeviceID();
                     return btData;
                 } else if (data[1] == 0x41) { //血糖
                     BloodSugarData btData = new BloodSugarData();
@@ -38,7 +38,7 @@ public class BeneCheckCholestenone extends BeneCheckThreeInOne {
                     btData.mday = day;
                     btData.mHour = hour;
                     btData.mMinute = minute;
-                    btData.setDeviceID(getBTDeviceID());
+                    btData.deviceID = getBTDeviceID();
                     btData.bloodSugar = ValueCast.makePrecision(getResultValue(data), 1);
                     return btData;
                 } else if (data[1] == 0x51) { //尿酸
@@ -49,7 +49,7 @@ public class BeneCheckCholestenone extends BeneCheckThreeInOne {
                     uaData.mHour = hour;
                     uaData.mMinute = minute;
                     uaData.mUricAcid = ValueCast.makePrecision(getResultValue(data), 2);
-                    uaData.setDeviceID(getBTDeviceID());
+                    uaData.deviceID = getBTDeviceID();
                     return uaData;
                 }
             }

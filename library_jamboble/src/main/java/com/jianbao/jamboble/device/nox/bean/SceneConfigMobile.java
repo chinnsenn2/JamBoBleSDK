@@ -3,7 +3,8 @@ package com.jianbao.jamboble.device.nox.bean;
 
 import com.jianbao.jamboble.device.nox.DeviceType;
 
-import static com.jianbao.doctor.bluetooth.device.nox.utils.SceneUtils.SLEEP_SCENE_ID;
+import static com.jianbao.jamboble.device.nox.utils.SceneUtils.SLEEP_SCENE_ID;
+
 
 public class SceneConfigMobile extends SceneConfigBase{
 

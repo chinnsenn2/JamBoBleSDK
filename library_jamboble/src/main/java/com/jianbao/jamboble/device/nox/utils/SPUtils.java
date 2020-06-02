@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.jianbao.jamboble.MainAppLike;
+import com.jianbao.jamboble.App;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,7 +82,7 @@ public class SPUtils {
      */
     public static void saveWithUserId(String key, Object value) {
 
-        SharedPreferences sp = getSharedPreferences(MainAppLike.getContext());
+        SharedPreferences sp = getSharedPreferences(App.context);
         SharedPreferences.Editor edit = sp.edit();
         if (value instanceof String) {
             edit.putString(key, value.toString());
@@ -108,7 +108,7 @@ public class SPUtils {
      * @param value 会根据value的类型选择保存
      */
     public static void save(String key, Object value) {
-        SharedPreferences sp = getSharedPreferences(MainAppLike.getContext());
+        SharedPreferences sp = getSharedPreferences(App.context);
         SharedPreferences.Editor edit = sp.edit();
         String saveKey = key;
         if (value instanceof String) {
@@ -136,7 +136,7 @@ public class SPUtils {
      * @return
      */
     public static <T> T getWithUserId(String key, T defalut) {
-        SharedPreferences sp = getSharedPreferences(MainAppLike.getContext());
+        SharedPreferences sp = getSharedPreferences(App.context);
         T val = null;
         if (defalut instanceof String) {
             val = (T) sp.getString(key, defalut.toString());
@@ -165,7 +165,7 @@ public class SPUtils {
      * @return
      */
     public static <T> T get(String key, T defalut) {
-        SharedPreferences sp = getSharedPreferences(MainAppLike.getContext());
+        SharedPreferences sp = getSharedPreferences(App.context);
         String getKey = key;
         if (defalut instanceof String) {
             return (T) sp.getString(getKey, defalut.toString());
@@ -183,7 +183,7 @@ public class SPUtils {
     }
 
     public static void removeWithUserId(String key) {
-        SharedPreferences sp = getSharedPreferences(MainAppLike.getContext());
+        SharedPreferences sp = getSharedPreferences(App.context);
         sp.edit().remove(key).commit();
     }
 
@@ -225,8 +225,8 @@ public class SPUtils {
      * 保存点击开始助眠的时间戳精确到分钟值
      */
     public static void saveFlagTimestap(String key) {
-        String data = getSharedPreferences(MainAppLike.getContext()).getString(key, "");
-        SharedPreferences.Editor edit = getSharedPreferences(MainAppLike.getContext()).edit();
+        String data = getSharedPreferences(App.context).getString(key, "");
+        SharedPreferences.Editor edit = getSharedPreferences(App.context).edit();
         int timestap = (int) (System.currentTimeMillis() / 1000 / 60);
         if ("".equals(data)) {
             data += (timestap + "");
@@ -243,7 +243,7 @@ public class SPUtils {
      */
     public static List<Integer> getFlagTimestaps(String key) {
         List<Integer> timestaps = new ArrayList<>();
-        String data = getSharedPreferences(MainAppLike.getContext()).getString(key, "");
+        String data = getSharedPreferences(App.context).getString(key, "");
         if (!TextUtils.isEmpty(data)) {
             try {
                 String[] strTimestaps = data.split("-");
@@ -266,7 +266,7 @@ public class SPUtils {
      * 清空点击开始助眠的时间戳精确到分钟值
      */
     public static void clearFlagTimestaps(String key) {
-        SharedPreferences.Editor edit = getSharedPreferences(MainAppLike.getContext()).edit();
+        SharedPreferences.Editor edit = getSharedPreferences(App.context).edit();
         edit.putString(key, "");
         Log.d(TAG,key + "---清空时间戳数据");
         edit.commit();

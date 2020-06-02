@@ -1,14 +1,11 @@
 package com.jianbao.jamboble.data;
 
-import java.io.Serializable;
-
-
 /**
  * 来自蓝牙设备的体脂数据
  *
  * @author 毛晓飞
  */
-public class FatScaleData extends BTData implements Serializable {
+public class FatScaleData extends BTData {
 	/**
 	 *
 	 */

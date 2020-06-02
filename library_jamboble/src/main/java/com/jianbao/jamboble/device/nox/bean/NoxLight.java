@@ -1,8 +1,8 @@
 package com.jianbao.jamboble.device.nox.bean;
 
 
-import com.appbase.utils.TimeUtil;
 import com.google.gson.annotations.Expose;
+import com.jianbao.jamboble.utils.TimeUtil;
 import com.jianbao.jamboble.device.nox.interfaces.INoxManager;
 
 import java.nio.ByteBuffer;

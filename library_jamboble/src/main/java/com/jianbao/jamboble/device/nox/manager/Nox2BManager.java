@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.appbase.utils.TimeUtil;
+import com.jianbao.jamboble.utils.TimeUtil;
 import com.jianbao.jamboble.device.nox.Device;
 import com.jianbao.jamboble.device.nox.bean.CallbackData;
 import com.jianbao.jamboble.device.nox.bean.DataPacket;

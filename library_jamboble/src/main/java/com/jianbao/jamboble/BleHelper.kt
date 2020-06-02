@@ -1,43 +1,94 @@
 package com.jianbao.jamboble
 
+import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothAdapter.LeScanCallback
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
 import android.os.Message
 import android.util.Log
-import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.fragment.app.FragmentActivity
+import com.dovar.dtoast.DToast
 import com.jianbao.jamboble.BTControlManager.BTControlListener
+import com.jianbao.jamboble.callbacks.BleDataCallback
+import com.jianbao.jamboble.callbacks.IBleStatusCallback
+import com.jianbao.jamboble.callbacks.IBleStatusCallback.State.Companion.CONNECTED
+import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
 import com.jianbao.jamboble.data.BTData
-import com.jianbao.jamboble.data.BloodPressureData
-import com.jianbao.jamboble.data.BloodSugarData
-import com.jianbao.jamboble.data.FatScaleData
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.device.BTDeviceSupport
+import com.jianbao.jamboble.fatscale.QnHelper
+import com.jianbao.jamboble.utils.permissions.PermissionsUtil
 import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by zhangmingyao
  * date: 2018/7/20.
  * Email:501863760@qq.com
  */
-class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
-    private var mBluetoothAdapter //蓝牙适配器，单例唯一
-            : BluetoothAdapter? = null
+class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceType) {
+
+    private var mBluetoothAdapter: BluetoothAdapter? = null//蓝牙适配器，单例唯一
     private var mBTControlManager: BTControlManager? = null
     private var mBluetoothStateReceiver: BluetoothStateReceiver? = null
-    private var mLeScanCallback //蓝牙设备搜索结果
-            : LeScanCallback? = null
+    private var mLeScanCallback: LeScanCallback? = null //蓝牙设备搜索结果
+    private var mNewScanCallback: ScanCallback? = null //蓝牙设备搜索结果
     private val mBTControlListener: BTControlListener
-    private var mHandler: Handler? = null
+    private var mHandler: Handler = ScanHandler(this@BleHelper)
     private var mScanning = false
+    private val mLockAutoScan = Any()
+    private val activityReference = WeakReference(activity)
+    private var mQnUser: QnUser? = null
+
+    private var mDataCallback: BleDataCallback? = null
+    private var mUnSteadyValueCallBack: UnSteadyValueCallBack? = null
+    private var mBleStatusCallback: IBleStatusCallback? = null
+
+    private val mDeviceType = deviceType
+    private var mScanRunnable: ScanRunnable? = null
+    private var mRegistered = AtomicBoolean(false)
+
+    companion object {
+        private const val TAG = "BleHelper"
+        private const val MESSAGE_SCAN = 0
+        private const val REQUEST_ENABLE_BT = 1
+    }
+
+    init {
+        mBTControlListener = BTListener(this)
+        mBleStatusCallback = object :
+            IBleStatusCallback {
+            override fun onNotification() {
+            }
+
+            override fun doByThirdSdk(
+                device: BluetoothDevice?,
+                btDevice: BTDevice?,
+                rssi: Int,
+                scanRecord: ByteArray?
+            ) {
+            }
+
+            override fun onBTStateChanged(state: Int) {
+            }
+
+            override fun onBTDeviceFound(device: BluetoothDevice?) {
+            }
+
+        }
+    }
 
     /**
      * 断开蓝牙时是否需要自动重新扫描
@@ -52,69 +103,69 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
             synchronized(mLockAutoScan) { field = autoScanWhenDisconnected }
         }
 
-    private val mLockAutoScan = Any()
-    private val activityReference = WeakReference(activity)
-    private val mBleWeightCallback: BleWeightCallback? = null
-    private val mBloodPressureCallback: BleBloodPressureCallback? = null
-    private val mBloodSugarCallback: BleBloodSugarCallback? = null
-    private var mBleStatusCallback: IBleStatusCallback? = null
-    private val mDeviceType = deviceType
-    private var mScanRunnable: ScanRunnable? = null
-
-    init {
-        mHandler = ScanHandler(this@BleHelper)
-        registerReceiver()
-    }
-
     /**
      * 初始化蓝牙对象，我们采用的蓝牙4.0，android 4.3以上支持
      */
     fun openBluetooth() {
+        if (mDeviceType == BTDeviceSupport.DeviceType.FAT_SCALE && mQnUser == null) {
+            showToast("请调用 updateQnUser 初始化用户数据")
+            return
+        }
         //检测手机是否支持蓝牙设备连接
         activityReference.get()?.also {
-            if (!it.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                Toast.makeText(it, "您的手机不支持蓝牙功能", Toast.LENGTH_SHORT).show()
-            } else {
+            if (it.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                 checkBle(it)
+            } else {
+                showToast("您的手机不支持蓝牙功能")
             }
         }
     }
 
-    private fun checkBle(activity: Activity) {
+    private fun showToast(msg: String) {
+        DToast.make(activityReference.get()).setText(R.id.tv_content_default, msg).show()
+    }
+
+    private fun checkBle(activity: FragmentActivity) {
         // 初始化 Bluetooth adapter,
         // 通过蓝牙管理器得到一个参考蓝牙适配器(API必须在以上android4.3或以上和版本)
+        PermissionsUtil.requestMustNot(
+            activity, PermissionsUtil.OnPermissionGranted { initBluetooth(activity) },
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    }
+
+    private fun initBluetooth(activity: Activity) {
         if (mBluetoothAdapter == null) {
             val bluetoothManager =
                 activity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             mBluetoothAdapter = bluetoothManager.adapter
-            // 检查设备上是否支持蓝牙
-            if (mBluetoothAdapter == null) {
-                Toast.makeText(activity, "您的手机不支持蓝牙功能", Toast.LENGTH_SHORT).show()
-            } else {
-
+            mBluetoothAdapter?.also { adapter ->
                 //在scanLeDevice之前,避免连接时BluetoothLeService仍为null
                 if (mBTControlManager == null) {
                     mBTControlManager = BTControlManager(activity)
                         .addBtControlListener(mBTControlListener)
                         .addServiceConnect {
                             registerReceiver()
-                            if (mBluetoothAdapter!!.isEnabled) {
+                            if (adapter.isEnabled) {
                                 scanLeDevice(true)
                             }
                         }
                         .init()
                 } else {
                     registerReceiver()
-                    if (mBluetoothAdapter!!.isEnabled) {
+                    if (adapter.isEnabled) {
                         scanLeDevice(true)
                     }
                 }
+            } ?: also {
+                showToast("您的手机不支持蓝牙功能")
             }
         }
 
         // 为了确保设备上蓝牙能使用, 如果当前蓝牙设备没启用,弹出对话框向用户要求授予权限来启用
-        if (mBluetoothAdapter != null) {
-            val enabled = mBluetoothAdapter!!.isEnabled
+        mBluetoothAdapter?.also {
+            val enabled = it.isEnabled
             //            mBleDataCallback.onLocalBTEnabled(enabled);
             if (!enabled) {
                 onBTStateChanged(IBleStatusCallback.State.NOT_FOUND)
@@ -130,15 +181,82 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
     }
 
     /**
+     * 数据回调
+     */
+    private fun setDataCallBack(callback: BleDataCallback) {
+        this.mDataCallback = callback
+    }
+
+    /**
+     * 动态数据回调（仅体重支持
+     */
+    private fun setUnSteadyValueCallBack(callback: UnSteadyValueCallBack) {
+        this.mUnSteadyValueCallBack = callback
+    }
+
+    /**
+     * 测量体重需传入用户参数
+     */
+    fun updateQnUser(qnUser: QnUser) {
+        if (mDeviceType != BTDeviceSupport.DeviceType.FAT_SCALE) {
+            showToast("非体重测量无需设置用户参数")
+            return
+        }
+        this.mQnUser = qnUser
+        QnHelper.instance.updateQNUser(qnUser)
+    }
+
+    /**
      * 蓝牙扫描
      *
      * @param enable
      */
     fun scanLeDevice(enable: Boolean) {
-        mHandler!!.removeMessages(MESSAGE_SCAN)
-        if (mBluetoothAdapter != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            scanLeDeviceNewApi(enable)
+        } else {
+            scanLeDeviceLowApi(enable)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun scanLeDeviceNewApi(enable: Boolean) {
+        mHandler.removeMessages(MESSAGE_SCAN)
+        mBluetoothAdapter?.also {
             if (enable) {
-                if (!mBluetoothAdapter!!.isEnabled) {
+                if (!it.isEnabled) {
+                    return
+                }
+            }
+            if (mNewScanCallback == null) {
+                mNewScanCallback = BLENewCallBack(this)
+            }
+            if (enable) {
+                val scanner = it.bluetoothLeScanner
+                if (mScanning) {
+                    scanner.stopScan(mNewScanCallback)
+                    Log.i(TAG, "正在查找设备..." + "已启动")
+                }
+                mScanning = true
+                scanner.startScan(mNewScanCallback)
+            } else {
+                if (mScanning) {
+                    if (it.isEnabled) {
+                        it.bluetoothLeScanner.stopScan(mNewScanCallback)
+                    }
+                    mScanning = false
+                    Log.i(TAG, "===停止查找设备===")
+                }
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun scanLeDeviceLowApi(enable: Boolean) {
+        mHandler.removeMessages(MESSAGE_SCAN)
+        mBluetoothAdapter?.also {
+            if (enable) {
+                if (!it.isEnabled) {
                     return
                 }
             }
@@ -146,24 +264,22 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
                 mLeScanCallback = BLECallback(this)
             }
             if (enable) {
-                if (!mScanning) {
-                    mBluetoothAdapter!!.stopLeScan(mLeScanCallback)
-                    val ret = mBluetoothAdapter!!.startLeScan(mLeScanCallback)
-                    if (ret) {
-                        mScanning = true
-                        onBTStateChanged(IBleStatusCallback.State.SCAN_START)
-                    } else {
-                        mHandler!!.sendEmptyMessageDelayed(MESSAGE_SCAN, 1000)
-                    }
-                    // resetMessage();
-                    Log.i(TAG, "正在查找设备...$ret")
-                } else {
+                if (mScanning) {
+                    it.stopLeScan(mLeScanCallback)
                     Log.i(TAG, "正在查找设备..." + "已启动")
                 }
+                val ret = it.startLeScan(mLeScanCallback)
+                if (ret) {
+                    mScanning = true
+                    onBTStateChanged(IBleStatusCallback.State.SCAN_START)
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MESSAGE_SCAN, 1000)
+                }
+                Log.i(TAG, "正在查找设备...$ret")
             } else {
                 if (mScanning) {
-                    if (mBluetoothAdapter!!.isEnabled) {
-                        mBluetoothAdapter!!.stopLeScan(mLeScanCallback)
+                    if (it.isEnabled) {
+                        it.stopLeScan(mLeScanCallback)
                     }
                     mScanning = false
                     Log.i(TAG, "===停止查找设备===")
@@ -176,11 +292,14 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
      * 注册广播，监听蓝牙开关状态
      */
     fun registerReceiver() {
-        activityReference.get()?.also {
-            if (mBluetoothStateReceiver == null) {
-                mBluetoothStateReceiver = BluetoothStateReceiver(this)
-                val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-                it.registerReceiver(mBluetoothStateReceiver, filter)
+        if (mRegistered.compareAndSet(false, false)) {
+            activityReference.get()?.also {
+                if (mBluetoothStateReceiver == null) {
+                    mBluetoothStateReceiver = BluetoothStateReceiver(this)
+                    val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+                    it.registerReceiver(mBluetoothStateReceiver, filter)
+                    mRegistered.set(true)
+                }
             }
         }
     }
@@ -189,23 +308,24 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
      * 注销广播
      */
     fun unregisterReceiver() {
-        activityReference.get()?.also {
-            if (mBluetoothStateReceiver != null) {
-                it.unregisterReceiver(mBluetoothStateReceiver)
+        if (mRegistered.compareAndSet(true, true)) {
+            activityReference.get()?.also {
+                mBluetoothStateReceiver?.also { receiver ->
+                    it.unregisterReceiver(receiver)
+                    mRegistered.set(false)
+                }
             }
         }
     }
 
     val isEnable: Boolean
-        get() = if (mBluetoothAdapter != null) {
-            mBluetoothAdapter!!.isEnabled
-        } else false
+        get() = mBluetoothAdapter?.isEnabled ?: false
 
     fun doReSearch() {
         activityReference.get()?.also {
             // 为了确保设备上蓝牙能使用, 如果当前蓝牙设备没启用,弹出对话框向用户要求授予权限来启用
-            if (mBluetoothAdapter != null) {
-                val enabled = mBluetoothAdapter!!.isEnabled
+            mBluetoothAdapter?.also { adapter ->
+                val enabled = adapter.isEnabled
                 if (!enabled) {
                     val enableBtIntent = Intent(
                         BluetoothAdapter.ACTION_REQUEST_ENABLE
@@ -218,7 +338,7 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
                     onBTStateChanged(IBleStatusCallback.State.SCAN_START)
                     scanLeDevice(true)
                 }
-            } else {
+            } ?: also {
                 openBluetooth()
             }
         }
@@ -227,7 +347,11 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
 
     protected fun connectDevice(device: BTDevice?, adress: String?): Boolean {
         scanLeDevice(false)
-        return mBTControlManager!!.connect(device, adress)
+        return mBTControlManager?.connect(device, adress) ?: false
+    }
+
+    public fun getConnectedDevice(): BTDevice? {
+        return mBTControlManager?.connectDevice
     }
 
     private fun handlerScanResult(
@@ -239,7 +363,7 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
             if (mScanRunnable == null) {
                 mScanRunnable = ScanRunnable(this)
             }
-            mScanRunnable!!.setDevice(device, rssi, scanRecord)
+            mScanRunnable?.setDevice(device, rssi, scanRecord)
             it.runOnUiThread(mScanRunnable)
         }
     }
@@ -261,14 +385,11 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
         if (mBleStatusCallback != null) {
             mBleStatusCallback = null
         }
-        //        if (mBleDataCallback != null) {
-//            mBleDataCallback = null;
-//        }
     }
 
     private fun receive(state: Int) {
         when (state) {
-            BluetoothAdapter.STATE_ON -> //                mBleDataCallback.onLocalBTEnabled(true);
+            BluetoothAdapter.STATE_ON -> //mBleDataCallback.onLocalBTEnabled(true);
                 scanLeDevice(true)
             BluetoothAdapter.STATE_TURNING_OFF, BluetoothAdapter.STATE_OFF -> {
                 //                mBleDataCallback.onLocalBTEnabled(false);
@@ -286,19 +407,28 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
         scanRecord: ByteArray
     ) {
         val btDevice = BTDeviceSupport.checkSupport(device, mDeviceType)
-        if (btDevice != null && mBleStatusCallback != null) {
-            println("device.getAddress() = " + device!!.address)
-            scanLeDevice(false)
-            Log.i(TAG, "已找到设备，准备连接...")
-            mBleStatusCallback!!.onBTDeviceFound(device)
-            if (BTDeviceSupport.isYolandaFatScale(btDevice)) {
-                if (mBTControlManager != null) {
-                    mBTControlManager!!.connectDevice = btDevice
-                }
-                mBleStatusCallback!!.doByThirdSdk(device, btDevice, rssi, scanRecord)
-            } else {
-                if (mBTControlManager != null) {
-                    mBTControlManager!!.connect(btDevice, device.address)
+        println("BleHelper.checkDevice ${device?.name.toString()}")
+        device?.also { blDevice ->
+            btDevice?.also { btDevice ->
+                mBleStatusCallback?.also { callback ->
+                    println("device.getAddress() = " + blDevice.address)
+                    scanLeDevice(false)
+                    Log.i(TAG, "已找到设备，准备连接...")
+                    mBleStatusCallback!!.onBTDeviceFound(device)
+                    if (BTDeviceSupport.isYolandaFatScale(btDevice)) {
+                        if (mBTControlManager != null) {
+                            mBTControlManager!!.connectDevice = btDevice
+                        }
+
+                        QnHelper.instance.also {
+                            it.connectDevice(this, mQnUser!!, device, btDevice, rssi, scanRecord)
+                        }
+//                        doYolandaConnect(device, btDevice, rssi, scanRecord)
+                    } else {
+                        if (mBTControlManager != null) {
+                            mBTControlManager!!.connect(btDevice, device.address)
+                        }
+                    }
                 }
             }
         }
@@ -309,28 +439,21 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
             scanLeDevice(true)
         } else if (connected) {
             //连接成功
-            onBTStateChanged(IBleStatusCallback.State.CONNECTED)
+            onBTStateChanged(CONNECTED)
         }
     }
 
-    /*******************蓝牙回调 */
+    /**
+     * 蓝牙回调
+     * @param state IBleStatusCallback.State
+     */
     fun onBTStateChanged(state: Int) {
-        mBleWeightCallback?.onBTStateChanged(state)
-        mBloodPressureCallback?.onBTStateChanged(state)
-        mBloodSugarCallback?.onBTStateChanged(state)
+        mDataCallback?.onBTStateChanged(state)
     }
 
     fun onBTDataReceived(btData: BTData?) {
-        when (btData) {
-            is FatScaleData ->{
-                mBleWeightCallback?.onBTDataReceived(btData)
-            }
-            is BloodPressureData ->{
-                mBloodPressureCallback?.onBTDataReceived(btData)
-            }
-            is BloodSugarData ->{
-                mBloodSugarCallback?.onBTDataReceived(btData)
-            }
+        btData?.also {
+            mDataCallback?.onBTDataReceived(btData)
         }
     }
 
@@ -339,15 +462,15 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
     }
 
     fun onUnsteadyValue(value: Float) {
-        mBleWeightCallback?.onUnsteadyValue(value)
+        mUnSteadyValueCallBack?.onUnsteadyValue(value)
     }
 
     fun onBTDeviceFound(device: BluetoothDevice?) {
-        mBleStatusCallback!!.onBTDeviceFound(device)
+        mBleStatusCallback?.onBTDeviceFound(device)
     }
 
     fun onNotification() {
-        mBleStatusCallback!!.onNotification()
+        mBleStatusCallback?.onNotification()
     }
 
     fun doByThirdSdk(
@@ -356,7 +479,7 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
         rssi: Int,
         scanRecord: ByteArray?
     ) {
-        mBleStatusCallback!!.doByThirdSdk(device, btDevice, rssi, scanRecord)
+        mBleStatusCallback?.doByThirdSdk(device, btDevice, rssi, scanRecord)
     }
 
     /**
@@ -386,7 +509,23 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
         ) {
             reference.get()?.handlerScanResult(device, rssi, scanRecord)
         }
+    }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    class BLENewCallBack internal constructor(helper: BleHelper) : ScanCallback() {
+
+        private val reference = WeakReference(helper)
+
+        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+            result?.let {
+                it.scanRecord?.bytes?.let { it1 ->
+                    reference.get()?.handlerScanResult(
+                        it.device, it.rssi,
+                        it1
+                    )
+                }
+            }
+        }
     }
 
     class ScanRunnable internal constructor(helper: BleHelper) : Runnable {
@@ -421,7 +560,7 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
 
     private class BTListener internal constructor(helper: BleHelper) : BTControlListener {
         private val mWeakReference = WeakReference(helper)
-        override fun onDataReceived(btData: BTData) {
+        override fun onDataReceived(btData: BTData?) {
             mWeakReference.get()?.onBTDataReceived(btData)
         }
 
@@ -439,20 +578,5 @@ class BleHelper(activity: Activity, deviceType: BTDeviceSupport.DeviceType) {
             bleHelper?.onConnectChanged(connected)
         }
 
-    }
-
-    companion object {
-        private const val TAG = "BleHelper"
-        private const val MESSAGE_SCAN = 0
-        private const val REQUEST_ENABLE_BT = 1
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param activity
-     */
-    init {
-        mBTControlListener = BTListener(this)
     }
 }

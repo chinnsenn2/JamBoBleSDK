@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.CRC32;
 
-import static com.jianbao.doctor.bluetooth.device.nox.bean.Nox2Packet.OperateType.SET;
+import static com.jianbao.jamboble.device.nox.bean.Nox2Packet.OperateType.SET;
 
 
 public class Nox2Packet extends DataPacket {

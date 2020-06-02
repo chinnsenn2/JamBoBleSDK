@@ -3,8 +3,7 @@ package com.jianbao.jamboble.device;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.jianbao.jamboble.LogUtils;
-import com.jianbao.jamboble.R;
+import com.jianbao.jamboble.utils.LogUtils;
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.BTWriteData;
 import com.jianbao.jamboble.data.FatScaleData;
@@ -169,7 +168,7 @@ public class YolandaFatScale extends BTDevice {
                     fatData.weight = makePrecision(1.0f * weight / 10);
                     fatData.fat = makePrecision(1.0f * fat / 10);
                     fatData.tbw = makePrecision(1.0f * tbw / 10);
-                    fatData.setDeviceID(getBTDeviceID());
+                    fatData.deviceID = getBTDeviceID();
                     //fatData.mus = makePrecision(1.0f * mus / 10);
                     return fatData;
 
@@ -237,6 +236,6 @@ public class YolandaFatScale extends BTDevice {
 
     @Override
     public int getImageResource() {
-        return R.drawable.blood_pressure_scale;
+        return 0;
     }
 }

@@ -1,6 +1,5 @@
 package com.jianbao.jamboble.device;
 
-import com.jianbao.jamboble.R;
 import com.jianbao.jamboble.data.BloodSugarData;
 
 /**
@@ -37,7 +36,7 @@ public class YuwellBloodSugar extends BTDevice {
 				
 				BloodSugarData btData = new BloodSugarData();
 				btData.bloodSugar = bloodSugar;
-				btData.setDeviceID(getBTDeviceID());
+				btData.deviceID = getBTDeviceID();
 				return btData;
 			}
 		}
@@ -46,6 +45,6 @@ public class YuwellBloodSugar extends BTDevice {
 
 	@Override
 	public int getImageResource() {
-		return R.drawable.blood_pressure_blood_glucose_meter_one;
+		return 0;
 	}
 }
