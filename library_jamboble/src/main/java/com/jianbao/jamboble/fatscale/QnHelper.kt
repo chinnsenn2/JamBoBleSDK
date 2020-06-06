@@ -24,6 +24,7 @@ class QnHelper private constructor() {
     private var mQNUser: QNUser? = null
 
     companion object {
+        @JvmStatic
         val instance = SingleTonHolder.instance
     }
 
@@ -198,5 +199,11 @@ class QnHelper private constructor() {
             }
         }
 
+    }
+
+    fun dispose() {
+        mBleHelper = null
+        mBtDevice = null
+        mQNUser = null
     }
 }

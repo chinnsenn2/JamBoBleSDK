@@ -10,7 +10,7 @@ import com.jianbao.jamboble.data.BloodPressureData
 import com.jianbao.jamboble.device.BTDeviceSupport
 
 class MainActivity : AppCompatActivity() {
-    private val mBleWeightHelper: BleHelper = BleHelper(this, BTDeviceSupport.DeviceType.BLOOD_PRESSURE)
+    private val mBleWeightHelper = BleHelper(this, BTDeviceSupport.DeviceType.BLOOD_PRESSURE)
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
     private val mTvValue by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value) }
     private val mBtnOpenBle by lazy(LazyThreadSafetyMode.NONE) { findViewById<Button>(R.id.btn_open_ble) }
@@ -23,30 +23,30 @@ class MainActivity : AppCompatActivity() {
             mBleWeightHelper.openBluetooth()
         }
 
-        mBleWeightHelper.setBloodPressCallBack(
-            object : BleBloodPressureCallback {
-                override fun onBTDataReceived(fatScaleData: BloodPressureData) {
-                    mTvValue.text = fatScaleData.toString()
-                }
-
-                override fun onBTStateChanged(state: Int) {
-                    println("MainActivity.onBTStateChanged $state")
-                    when (state) {
-                        NOT_FOUND -> {
-                            mTvStatus.text = "未找到设备"
-                        }
-                        SCAN_START -> {
-                            mTvStatus.text = "开始扫描..."
-                        }
-                        CONNECTED -> {
-                            mTvStatus.text = "连接设备成功"
-                        }
-                        TIMEOUT -> {
-                            mTvStatus.text = "超时"
-                        }
-                    }
-                }
-
-            })
+//        mBleWeightHelper.setBloodPressCallBack(
+//            object : BleBloodPressureCallback {
+//                override fun onBTDataReceived(fatScaleData: BloodPressureData) {
+//                    mTvValue.text = fatScaleData.toString()
+//                }
+//
+//                override fun onBTStateChanged(state: Int) {
+//                    println("MainActivity.onBTStateChanged $state")
+//                    when (state) {
+//                        NOT_FOUND -> {
+//                            mTvStatus.text = "未找到设备"
+//                        }
+//                        SCAN_START -> {
+//                            mTvStatus.text = "开始扫描..."
+//                        }
+//                        CONNECTED -> {
+//                            mTvStatus.text = "连接设备成功"
+//                        }
+//                        TIMEOUT -> {
+//                            mTvStatus.text = "超时"
+//                        }
+//                    }
+//                }
+//
+//            })
     }
 }

@@ -183,7 +183,7 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     /**
      * 数据回调
      */
-    private fun setDataCallBack(callback: BleDataCallback) {
+    fun setDataCallBack(callback: BleDataCallback) {
         this.mDataCallback = callback
     }
 
@@ -385,6 +385,7 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
         if (mBleStatusCallback != null) {
             mBleStatusCallback = null
         }
+        QnHelper.instance.dispose()
     }
 
     private fun receive(state: Int) {
