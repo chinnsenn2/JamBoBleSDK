@@ -42,7 +42,7 @@ import com.jianbao.jamboble.device.CavyBandDevice;
 import com.jianbao.jamboble.device.OnCallBloodSugar;
 import com.jianbao.jamboble.device.SannuoAnWenBloodSugar;
 import com.jianbao.jamboble.device.oximeter.OximeterDevice;
-import com.jianbao.jamboble.device.oximeter.OximeterHelper;
+import com.jianbao.jamboble.device.oximeter.OxiMeterHelper;
 import com.jianbao.jamboble.utils.LogUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -394,11 +394,11 @@ public class BTControlManager {
                         if (TextUtils.equals(mSelectBTDevice.deviceName, OximeterDevice.OximeterName.PC_60F.getName())) {
                             if (mBTControlListener != null) {
                                 //初始化inputStream和outputStream
-                                OximeterHelper mOximeterHelper = new OximeterHelper(
+                                OxiMeterHelper mOxiMeterHelper = new OxiMeterHelper(
                                         mBluetoothLeService,
                                         mSelectBTDevice.serviceUUID,
                                         mSelectBTDevice.writeCharacterUUID);
-                                ((OximeterDevice) mSelectBTDevice).setOximeterHelper(mOximeterHelper);
+                                ((OximeterDevice) mSelectBTDevice).setOximeterHelper(mOxiMeterHelper);
 
                                 //回调开始检测
                                 mBTControlListener.onActionNotification();
@@ -414,11 +414,11 @@ public class BTControlManager {
                     //调用
                     if (mBTControlListener != null) {
                         //初始化inputStream和outputStream
-                        OximeterHelper mOximeterHelper = new OximeterHelper(
+                        OxiMeterHelper mOxiMeterHelper = new OxiMeterHelper(
                                 mBluetoothLeService,
                                 mSelectBTDevice.serviceUUID,
                                 mSelectBTDevice.writeCharacterUUID);
-                        ((OximeterDevice) mSelectBTDevice).setOximeterHelper(mOximeterHelper);
+                        ((OximeterDevice) mSelectBTDevice).setOximeterHelper(mOxiMeterHelper);
 
                         //回调开始检测
                         mBTControlListener.onActionNotification();

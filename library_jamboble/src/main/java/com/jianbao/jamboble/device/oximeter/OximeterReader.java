@@ -11,9 +11,9 @@ import java.io.IOException;
 
 public class OximeterReader implements Ireader{
 
-    private OximeterHelper mHelper;
+    private OxiMeterHelper mHelper;
 
-    public OximeterReader(OximeterHelper helper) {
+    public OximeterReader(OxiMeterHelper helper) {
         mHelper = helper;
     }
 

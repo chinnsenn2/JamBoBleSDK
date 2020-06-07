@@ -14,13 +14,13 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Email:501863760@qq.com
  */
 
-public class OximeterHelper {
+public class OxiMeterHelper {
 
     private BluetoothLeService mBluetoothLeService;
     private String mUuidService;
     private String mUuidWriteCharacter;
 
-    public OximeterHelper(BluetoothLeService bluetoothLeService, String uuidService, String uuidWriteCharacter) {
+    public OxiMeterHelper(BluetoothLeService bluetoothLeService, String uuidService, String uuidWriteCharacter) {
         mBluetoothLeService = bluetoothLeService;
         mUuidService = uuidService;
         mUuidWriteCharacter = uuidWriteCharacter;
@@ -71,10 +71,8 @@ public class OximeterHelper {
         if(mBuffer.size()>0){
             byte[] temp = mBuffer.poll();
             if(temp!=null && temp.length>0){
-                int len = (temp.length < dataBuffer.length)? temp.length:dataBuffer.length;
-                for(int j=0;j<len;j++){
-                    dataBuffer[j]=temp[j];
-                }
+                int len = Math.min(temp.length, dataBuffer.length);
+                System.arraycopy(temp, 0, dataBuffer, 0, len);
                 return len;
             }
         }

@@ -10,6 +10,8 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.util.Arrays;
+
 public class BaseDraw extends View implements Runnable {
 
 	protected boolean stop = false;
@@ -69,9 +71,7 @@ public class BaseDraw extends View implements Runnable {
 		height = h;
 		weight = w;
 		data2draw = new int[(int) (w / stepx)];
-		for (int i = 0; i < data2draw.length; i++) {
-			data2draw[i] = -1;
-		}	
+		Arrays.fill(data2draw, -1);
 	}
 
 	public void Stop() {
@@ -129,9 +129,7 @@ public class BaseDraw extends View implements Runnable {
 		if (data2draw == null)
 			return;
 		arraycnt = 0;
-		for (int i = 0; i < data2draw.length; i++) {
-			data2draw[i] = -1;
-		}
+		Arrays.fill(data2draw, -1);
 		postInvalidate();
 	}
 

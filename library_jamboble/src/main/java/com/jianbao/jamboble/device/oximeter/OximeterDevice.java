@@ -40,7 +40,7 @@ public class OximeterDevice extends BTDevice {
     }
 
 
-    private OximeterHelper mOximeterHelper;
+    private OxiMeterHelper mOxiMeterHelper;
 
     public OximeterDevice() {
         super("科瑞康血氧仪",
@@ -69,12 +69,12 @@ public class OximeterDevice extends BTDevice {
         return true;
     }
 
-    public void setOximeterHelper(OximeterHelper oximeterHelper) {
-        mOximeterHelper = oximeterHelper;
+    public void setOximeterHelper(OxiMeterHelper oximeterHelper) {
+        mOxiMeterHelper = oximeterHelper;
     }
 
-    public OximeterHelper getOximeterHelper() {
-        return mOximeterHelper;
+    public OxiMeterHelper getOximeterHelper() {
+        return mOxiMeterHelper;
     }
 
 }

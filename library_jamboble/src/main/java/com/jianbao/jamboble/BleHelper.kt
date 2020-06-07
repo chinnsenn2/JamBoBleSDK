@@ -19,6 +19,8 @@ import android.os.Message
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentActivity
+import com.creative.FingerOximeter.FingerOximeter
+import com.creative.FingerOximeter.IFingerOximeterCallBack
 import com.dovar.dtoast.DToast
 import com.jianbao.jamboble.BTControlManager.BTControlListener
 import com.jianbao.jamboble.callbacks.BleDataCallback
@@ -28,6 +30,10 @@ import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.device.BTDeviceSupport
+import com.jianbao.jamboble.device.oximeter.FingerOximeterCallback
+import com.jianbao.jamboble.device.oximeter.OximeterDevice
+import com.jianbao.jamboble.device.oximeter.OximeterReader
+import com.jianbao.jamboble.device.oximeter.OximeterWriter
 import com.jianbao.jamboble.fatscale.QnHelper
 import com.jianbao.jamboble.utils.permissions.PermissionsUtil
 import java.lang.ref.WeakReference
@@ -60,6 +66,10 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     private var mScanRunnable: ScanRunnable? = null
     private var mRegistered = AtomicBoolean(false)
 
+    private var mOximeterReader: OximeterReader? = null
+    private var mOximeterWriter: OximeterWriter? = null
+    private var mFingerOximeter: FingerOximeter? = null
+
     companion object {
         private const val TAG = "BleHelper"
         private const val MESSAGE_SCAN = 0
@@ -68,26 +78,6 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
 
     init {
         mBTControlListener = BTListener(this)
-        mBleStatusCallback = object :
-            IBleStatusCallback {
-            override fun onNotification() {
-            }
-
-            override fun doByThirdSdk(
-                device: BluetoothDevice?,
-                btDevice: BTDevice?,
-                rssi: Int,
-                scanRecord: ByteArray?
-            ) {
-            }
-
-            override fun onBTStateChanged(state: Int) {
-            }
-
-            override fun onBTDeviceFound(device: BluetoothDevice?) {
-            }
-
-        }
     }
 
     /**
@@ -185,6 +175,13 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
      */
     fun setDataCallBack(callback: BleDataCallback) {
         this.mDataCallback = callback
+    }
+
+    /**
+     *
+     */
+    fun setBleStatusCallback(callback: IBleStatusCallback) {
+        this.mBleStatusCallback = callback
     }
 
     /**
@@ -424,7 +421,6 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
                         QnHelper.instance.also {
                             it.connectDevice(this, mQnUser!!, device, btDevice, rssi, scanRecord)
                         }
-//                        doYolandaConnect(device, btDevice, rssi, scanRecord)
                     } else {
                         if (mBTControlManager != null) {
                             mBTControlManager!!.connect(btDevice, device.address)
@@ -472,6 +468,23 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
 
     fun onNotification() {
         mBleStatusCallback?.onNotification()
+        if (mDeviceType == BTDeviceSupport.DeviceType.OXIMETER) {
+            getConnectedDevice()?.also {
+                if (it is OximeterDevice) {
+                    mOximeterReader = OximeterReader(it.oximeterHelper)
+                    mOximeterWriter = OximeterWriter(it.oximeterHelper)
+                    mFingerOximeter = FingerOximeter(
+                        mOximeterReader,
+                        mOximeterWriter,
+                        FingerOximeterCallback(this)
+                    )
+                    mFingerOximeter?.also {
+                        it.Start()
+                        it.SetWaveAction(true)
+                    }
+                }
+            }
+        }
     }
 
     fun doByThirdSdk(

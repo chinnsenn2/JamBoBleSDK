@@ -11,9 +11,9 @@ import java.io.IOException;
 
 public class OximeterWriter implements Isender{
 
-    private OximeterHelper mHelper;
+    private OxiMeterHelper mHelper;
 
-    public OximeterWriter(OximeterHelper helper) {
+    public OximeterWriter(OxiMeterHelper helper) {
         mHelper = helper;
     }
 
