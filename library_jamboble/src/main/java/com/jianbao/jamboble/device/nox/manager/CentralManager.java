@@ -6,7 +6,6 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.jianbao.jamboble.App;
 import com.jianbao.jamboble.device.nox.BaseCallback;
 import com.jianbao.jamboble.device.nox.ConnectionState;
 import com.jianbao.jamboble.device.nox.Device;
@@ -69,7 +68,7 @@ public class CentralManager extends DeviceManager implements ICentralManager {
         if (sInstance == null) {
             sInstance = new CentralManager();
         }
-        sInstance.mContext = App.context;
+        sInstance.mContext = context;
         sInstance.setSleepAidDevice(sleepAidDevice);
         sInstance.setMonitorDevice(monitorDevice);
         //初始化AppManager ，防止在子线程内初始化

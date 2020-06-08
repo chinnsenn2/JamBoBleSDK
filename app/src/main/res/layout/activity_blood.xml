@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".BloodActivity">
+
+
+    <View
+        android:id="@+id/v_bt_status"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0" />
+
+    <TextView
+        android:id="@+id/tv_status_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="蓝牙状态"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/v_bt_status"
+        app:layout_constraintEnd_toStartOf="@id/tv_status"
+        app:layout_constraintStart_toStartOf="@id/v_bt_status"
+        app:layout_constraintTop_toTopOf="@id/v_bt_status" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="未开始"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/v_bt_status"
+        app:layout_constraintEnd_toEndOf="@id/v_bt_status"
+        app:layout_constraintStart_toEndOf="@id/tv_status_title"
+        app:layout_constraintTop_toTopOf="@id/v_bt_status" />
+
+    <View
+        android:id="@+id/v_bt_data"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/v_bt_status"
+        app:layout_constraintVertical_bias="0" />
+
+    <TextView
+        android:id="@+id/tv_data_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="血压数据结果"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintTop_toTopOf="@id/v_bt_data"
+        app:layout_constraintStart_toStartOf="@id/v_bt_data"
+        app:layout_constraintEnd_toEndOf="@id/v_bt_data"
+        app:layout_constraintBottom_toTopOf="@id/tv_value" />
+
+    <TextView
+        android:id="@+id/tv_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0.0"
+        android:textSize="20sp"
+        android:padding="5dp"
+        app:layout_constraintBottom_toBottomOf="@id/v_bt_data"
+        app:layout_constraintEnd_toEndOf="@id/v_bt_data"
+        app:layout_constraintStart_toStartOf="@id/v_bt_data"
+        app:layout_constraintTop_toBottomOf="@id/tv_data_title" />
+
+    <Button
+        android:id="@+id/btn_open_ble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始扫描"
+        android:textColor="#fff"
+        android:background="@color/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/v_bt_data" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

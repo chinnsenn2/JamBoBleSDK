@@ -2,13 +2,8 @@ package com.jianbao.jamboble.device.nox.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.jianbao.jamboble.App;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -82,22 +77,22 @@ public class SPUtils {
      */
     public static void saveWithUserId(String key, Object value) {
 
-        SharedPreferences sp = getSharedPreferences(App.context);
-        SharedPreferences.Editor edit = sp.edit();
-        if (value instanceof String) {
-            edit.putString(key, value.toString());
-        } else if (value instanceof Integer) {
-            edit.putInt(key, ((Integer) value).intValue());
-        } else if (value instanceof Float) {
-            edit.putFloat(key, ((Float) value).floatValue());
-        } else if (value instanceof Boolean) {
-            edit.putBoolean(key, ((Boolean) value).booleanValue());
-        } else if (value instanceof Long) {
-            edit.putLong(key, ((Long) value));
-        } else {
-            throw new RuntimeException("还没有添加这个类型数据的保存，请在代码里面添加");
-        }
-        edit.commit();
+//        SharedPreferences sp = getSharedPreferences(App.context);
+//        SharedPreferences.Editor edit = sp.edit();
+//        if (value instanceof String) {
+//            edit.putString(key, value.toString());
+//        } else if (value instanceof Integer) {
+//            edit.putInt(key, ((Integer) value).intValue());
+//        } else if (value instanceof Float) {
+//            edit.putFloat(key, ((Float) value).floatValue());
+//        } else if (value instanceof Boolean) {
+//            edit.putBoolean(key, ((Boolean) value).booleanValue());
+//        } else if (value instanceof Long) {
+//            edit.putLong(key, ((Long) value));
+//        } else {
+//            throw new RuntimeException("还没有添加这个类型数据的保存，请在代码里面添加");
+//        }
+//        edit.commit();
         //LogUtil.log(TAG+" saveWithUserId key:" + saveKey+",val:" + value);
     }
 
@@ -108,23 +103,23 @@ public class SPUtils {
      * @param value 会根据value的类型选择保存
      */
     public static void save(String key, Object value) {
-        SharedPreferences sp = getSharedPreferences(App.context);
-        SharedPreferences.Editor edit = sp.edit();
-        String saveKey = key;
-        if (value instanceof String) {
-            edit.putString(saveKey, value.toString());
-        } else if (value instanceof Integer || value instanceof Byte) {
-            edit.putInt(saveKey, ((Integer) value).intValue());
-        } else if (value instanceof Float) {
-            edit.putFloat(saveKey, ((Float) value).floatValue());
-        } else if (value instanceof Boolean) {
-            edit.putBoolean(saveKey, ((Boolean) value).booleanValue());
-        } else if (value instanceof Long) {
-            edit.putLong(saveKey, ((Long) value));
-        } else {
-            throw new RuntimeException("还没有添加这个类型数据的保存，请在代码里面添加");
-        }
-        edit.commit();
+//        SharedPreferences sp = getSharedPreferences(App.context);
+//        SharedPreferences.Editor edit = sp.edit();
+//        String saveKey = key;
+//        if (value instanceof String) {
+//            edit.putString(saveKey, value.toString());
+//        } else if (value instanceof Integer || value instanceof Byte) {
+//            edit.putInt(saveKey, ((Integer) value).intValue());
+//        } else if (value instanceof Float) {
+//            edit.putFloat(saveKey, ((Float) value).floatValue());
+//        } else if (value instanceof Boolean) {
+//            edit.putBoolean(saveKey, ((Boolean) value).booleanValue());
+//        } else if (value instanceof Long) {
+//            edit.putLong(saveKey, ((Long) value));
+//        } else {
+//            throw new RuntimeException("还没有添加这个类型数据的保存，请在代码里面添加");
+//        }
+//        edit.commit();
     }
 
     /**
@@ -136,23 +131,23 @@ public class SPUtils {
      * @return
      */
     public static <T> T getWithUserId(String key, T defalut) {
-        SharedPreferences sp = getSharedPreferences(App.context);
+//        SharedPreferences sp = getSharedPreferences(App.context);
         T val = null;
-        if (defalut instanceof String) {
-            val = (T) sp.getString(key, defalut.toString());
-        } else if (defalut instanceof Integer) {
-            val = (T) ((Integer) sp.getInt(key, ((Integer) defalut).intValue()));
-        } else if (defalut instanceof Float) {
-            val = (T) ((Float) sp.getFloat(key, ((Float) defalut).floatValue()));
-        } else if (defalut instanceof Boolean) {
-            val = (T) ((Boolean) sp.getBoolean(key, ((Boolean) defalut).booleanValue()));
-        } else if (defalut instanceof Long) {
-            val = (T) ((Long) sp.getLong(key, ((Long) defalut).longValue()));
-        } else {
-            throw new RuntimeException("还没有添加这个类型数据的获取，请在代码里面添加");
-        }
-
-        //LogUtil.log(TAG+" getWithUserId key:" + getKey+",defalut:"+ defalut+",val:" + val);
+//        if (defalut instanceof String) {
+//            val = (T) sp.getString(key, defalut.toString());
+//        } else if (defalut instanceof Integer) {
+//            val = (T) ((Integer) sp.getInt(key, ((Integer) defalut).intValue()));
+//        } else if (defalut instanceof Float) {
+//            val = (T) ((Float) sp.getFloat(key, ((Float) defalut).floatValue()));
+//        } else if (defalut instanceof Boolean) {
+//            val = (T) ((Boolean) sp.getBoolean(key, ((Boolean) defalut).booleanValue()));
+//        } else if (defalut instanceof Long) {
+//            val = (T) ((Long) sp.getLong(key, ((Long) defalut).longValue()));
+//        } else {
+//            throw new RuntimeException("还没有添加这个类型数据的获取，请在代码里面添加");
+//        }
+//
+//        //LogUtil.log(TAG+" getWithUserId key:" + getKey+",defalut:"+ defalut+",val:" + val);
         return val;
     }
 
@@ -160,31 +155,31 @@ public class SPUtils {
      * 获取保存的信息
      *
      * @param key     key
-     * @param defalut 根据默认值传递进来的类型决定返回的类型
-     * @param <T>
+//     * @param defalut 根据默认值传递进来的类型决定返回的类型
+//     * @param <T>
      * @return
      */
-    public static <T> T get(String key, T defalut) {
-        SharedPreferences sp = getSharedPreferences(App.context);
-        String getKey = key;
-        if (defalut instanceof String) {
-            return (T) sp.getString(getKey, defalut.toString());
-        } else if (defalut instanceof Integer || defalut instanceof Byte) {
-            return (T) ((Integer) sp.getInt(getKey, ((Integer) defalut).intValue()));
-        } else if (defalut instanceof Float) {
-            return (T) ((Float) sp.getFloat(getKey, ((Float) defalut).floatValue()));
-        } else if (defalut instanceof Boolean) {
-            return (T) ((Boolean) sp.getBoolean(getKey, ((Boolean) defalut).booleanValue()));
-        } else if (defalut instanceof Long) {
-            return (T) ((Long) sp.getLong(getKey, ((Long) defalut).longValue()));
-        } else {
-            throw new RuntimeException("还没有添加这个类型数据的获取，请在代码里面添加");
-        }
-    }
+//    public static <T> T get(String key, T defalut) {
+//        SharedPreferences sp = getSharedPreferences(App.context);
+//        String getKey = key;
+//        if (defalut instanceof String) {
+//            return (T) sp.getString(getKey, defalut.toString());
+//        } else if (defalut instanceof Integer || defalut instanceof Byte) {
+//            return (T) ((Integer) sp.getInt(getKey, ((Integer) defalut).intValue()));
+//        } else if (defalut instanceof Float) {
+//            return (T) ((Float) sp.getFloat(getKey, ((Float) defalut).floatValue()));
+//        } else if (defalut instanceof Boolean) {
+//            return (T) ((Boolean) sp.getBoolean(getKey, ((Boolean) defalut).booleanValue()));
+//        } else if (defalut instanceof Long) {
+//            return (T) ((Long) sp.getLong(getKey, ((Long) defalut).longValue()));
+//        } else {
+//            throw new RuntimeException("还没有添加这个类型数据的获取，请在代码里面添加");
+//        }
+//    }
 
     public static void removeWithUserId(String key) {
-        SharedPreferences sp = getSharedPreferences(App.context);
-        sp.edit().remove(key).commit();
+//        SharedPreferences sp = getSharedPreferences(App.context);
+//        sp.edit().remove(key).commit();
     }
 
     public static void removeWithUserIdAndDeviceType(int deviceType, String key) {
@@ -225,17 +220,17 @@ public class SPUtils {
      * 保存点击开始助眠的时间戳精确到分钟值
      */
     public static void saveFlagTimestap(String key) {
-        String data = getSharedPreferences(App.context).getString(key, "");
-        SharedPreferences.Editor edit = getSharedPreferences(App.context).edit();
-        int timestap = (int) (System.currentTimeMillis() / 1000 / 60);
-        if ("".equals(data)) {
-            data += (timestap + "");
-        } else {
-            data += ("-" + timestap);
-        }
-        edit.putString(key, data);
-        Log.d(TAG,key + "--保存时间戳：" + data);
-        edit.commit();
+//        String data = getSharedPreferences(App.context).getString(key, "");
+//        SharedPreferences.Editor edit = getSharedPreferences(App.context).edit();
+//        int timestap = (int) (System.currentTimeMillis() / 1000 / 60);
+//        if ("".equals(data)) {
+//            data += (timestap + "");
+//        } else {
+//            data += ("-" + timestap);
+//        }
+//        edit.putString(key, data);
+//        Log.d(TAG,key + "--保存时间戳：" + data);
+//        edit.commit();
     }
 
     /**
@@ -243,22 +238,22 @@ public class SPUtils {
      */
     public static List<Integer> getFlagTimestaps(String key) {
         List<Integer> timestaps = new ArrayList<>();
-        String data = getSharedPreferences(App.context).getString(key, "");
-        if (!TextUtils.isEmpty(data)) {
-            try {
-                String[] strTimestaps = data.split("-");
-                for (int i = 0; i < strTimestaps.length; i++) {
-                    String str = strTimestaps[i];
-                    if (!"".equals(str)) {
-                        int timestap = Integer.valueOf(str);
-                        timestaps.add(timestap);
-                    }
-                }
-                Log.d(TAG,key + "---获取时间戳数据：" + Arrays.toString(timestaps.toArray()));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        String data = getSharedPreferences(App.context).getString(key, "");
+//        if (!TextUtils.isEmpty(data)) {
+//            try {
+//                String[] strTimestaps = data.split("-");
+//                for (int i = 0; i < strTimestaps.length; i++) {
+//                    String str = strTimestaps[i];
+//                    if (!"".equals(str)) {
+//                        int timestap = Integer.valueOf(str);
+//                        timestaps.add(timestap);
+//                    }
+//                }
+//                Log.d(TAG,key + "---获取时间戳数据：" + Arrays.toString(timestaps.toArray()));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
         return timestaps;
     }
 
@@ -266,10 +261,10 @@ public class SPUtils {
      * 清空点击开始助眠的时间戳精确到分钟值
      */
     public static void clearFlagTimestaps(String key) {
-        SharedPreferences.Editor edit = getSharedPreferences(App.context).edit();
-        edit.putString(key, "");
-        Log.d(TAG,key + "---清空时间戳数据");
-        edit.commit();
+//        SharedPreferences.Editor edit = getSharedPreferences(App.context).edit();
+//        edit.putString(key, "");
+//        Log.d(TAG,key + "---清空时间戳数据");
+//        edit.commit();
     }
 
 

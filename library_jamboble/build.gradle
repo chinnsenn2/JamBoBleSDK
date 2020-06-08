@@ -35,6 +35,7 @@ android {
 }
 
 dependencies {
+    api files('libs/CreativeHealth_pod.jar')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation rootProject.ext.dependencies.appcompatx
     implementation rootProject.ext.dependencies.core_ktx

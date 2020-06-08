@@ -1,20 +1,24 @@
 package com.jianbao.jamboble.fatscale
 
 import android.bluetooth.BluetoothDevice
-import com.jianbao.jamboble.App
+import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Log
 import com.jianbao.jamboble.BleHelper
+import com.jianbao.jamboble.BleState
+import com.jianbao.jamboble.BuildConfig
 import com.jianbao.jamboble.QnUser
-import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.data.FatScaleData
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.utils.LogUtils
+import com.qingniu.qnble.utils.QNLogUtils
 import com.yolanda.health.qnblesdk.constant.QNIndicator
 import com.yolanda.health.qnblesdk.listener.QNBleConnectionChangeListener
 import com.yolanda.health.qnblesdk.listener.QNScaleDataListener
 import com.yolanda.health.qnblesdk.out.*
 import java.lang.ref.WeakReference
 
-class QnHelper private constructor() {
+class QnHelper private constructor(context: Context) {
 
     private var mQNBleConnectionChangeListener = JamboQNBleConnectionChangeListener(this)
     private var mQNDataListener = JamboQNScaleDataListener(this)
@@ -22,21 +26,57 @@ class QnHelper private constructor() {
     private var mBleHelper: BleHelper? = null
     private var mBtDevice: BTDevice? = null
     private var mQNUser: QNUser? = null
+    private var mContext: Context? = context
 
     companion object {
-        @JvmStatic
-        val instance = SingleTonHolder.instance
-    }
+        private var instance: QnHelper? = null
 
-    init {
-        QNBleApi.getInstance(App.context).also {
-            it.setBleConnectionChangeListener(mQNBleConnectionChangeListener)
-            it.setDataListener(mQNDataListener)
+        @JvmStatic
+        fun getInstance(context: Context): QnHelper {
+            if (instance == null) {
+                synchronized(QnHelper::class.java) {
+                    if (instance == null) {
+                        initQnSDK(context)
+                        instance = QnHelper(context)
+                    }
+                }
+            }
+            return instance!!
+        }
+
+        private var mQnInitTime = 0
+
+        private fun initQnSDK(context: Context?) {
+            context?.also { c ->
+                c.packageManager?.also { packageManager ->
+                    if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                        val encryptPath = "file:///android_asset/hzyb20160314175503.qn"
+                        QNBleApi.getInstance(c).also {
+                            QNLogUtils.setLogEnable(BuildConfig.DEBUG)
+                            it.initSdk("hzyb20160314175503", encryptPath) { code, msg ->
+                                Log.d(
+                                    "BaseApplication", "code = [$code], msg = [$msg]"
+                                )
+                                if (code != 0) {
+                                    if (mQnInitTime < 3) {
+                                        mQnInitTime += 1
+                                        initQnSDK(c)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 
-    object SingleTonHolder {
-        val instance: QnHelper = QnHelper()
+    init {
+        QNBleApi.getInstance(mContext).also {
+            it.setBleConnectionChangeListener(mQNBleConnectionChangeListener)
+            it.setDataListener(mQNDataListener)
+        }
     }
 
     fun connectDevice(
@@ -49,7 +89,7 @@ class QnHelper private constructor() {
     ) {
         this.mBleHelper = bleHelper
         this.mBtDevice = btDevice
-        QNBleApi.getInstance(App.context).also {
+        QNBleApi.getInstance(mContext).also {
             mQNUser = it.buildUser(
                 qNUser.user_id,
                 qNUser.height,
@@ -57,7 +97,7 @@ class QnHelper private constructor() {
                 qNUser.birthday
             ) { _, _ -> }
         }
-        QNBleApi.getInstance(App.context).also {
+        QNBleApi.getInstance(mContext).also {
             it.buildDevice(device, rssi, scanRecord) { _, _ -> }
                 .also { qd ->
                     mQNUser?.let { qnUser -> it.connectDevice(qd, qnUser) { _, _ -> } }
@@ -69,7 +109,7 @@ class QnHelper private constructor() {
     }
 
     fun updateQNUser(qNUser: QnUser) {
-        QNBleApi.getInstance(App.context).also {
+        QNBleApi.getInstance(mContext).also {
             mQNUser = it.buildUser(
                 qNUser.user_id,
                 qNUser.height,
@@ -88,9 +128,8 @@ class QnHelper private constructor() {
 
         override fun onConnected(qnBleDevice: QNBleDevice) {
             weakReference.get()?.also {
-                it.mBleHelper?.onBTStateChanged(IBleStatusCallback.State.CONNECTED)
+                it.mBleHelper?.onBTStateChanged(BleState.CONNECTED)
             }
-
         }
 
         override fun onServiceSearchComplete(qnBleDevice: QNBleDevice) {}
@@ -147,47 +186,59 @@ class QnHelper private constructor() {
                 val size = list.size
                 while (i < size) {
                     val data = list[i]
-                    /*if (data.getType() == QNIndicator.TYPE_MUSCLE){
-                        fatData.mus = data.getValue();
-                    }else */if (data.type == QNIndicator.TYPE_BMI) {
-                        fatData.bmi = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_MUSCLE) {
-                        fatData.skeletal = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_PROTEIN) {
-                        fatData.proteins = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_WEIGHT) {
-                        fatData.weight = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_BMR) {
-                        fatData.metabolic = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_SUBFAT) {
-                        fatData.subcutaneousfat = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_VISFAT) {
-                        fatData.viscerallevel = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_WATER) {
-                        fatData.tbw = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_BODYFAT) {
-                        fatData.fat = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_BONE) {
-                        fatData.bonemass = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_BODY_AGE) {
-                        fatData.bodyage = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_SCORE) {
-                        fatData.score = data.value.toFloat()
-                    } else if (data.type == QNIndicator.TYPE_BODY_SHAPE) {
-                        val bodyshapes =
-                            arrayOf(
-                                "未知体型",
-                                "隐形肥胖型",
-                                "运动不足型",
-                                "偏瘦型",
-                                "标准型",
-                                "偏瘦肌肉型",
-                                "肥胖型",
-                                "偏胖型",
-                                "标准肌肉型",
-                                "非常肌肉型"
-                            )
-                        fatData.bodyshape = bodyshapes[data.value.toInt()]
+                    when (data.type) {
+                        QNIndicator.TYPE_BMI -> {
+                            fatData.bmi = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_MUSCLE -> {
+                            fatData.skeletal = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_PROTEIN -> {
+                            fatData.proteins = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_WEIGHT -> {
+                            fatData.weight = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_BMR -> {
+                            fatData.metabolic = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_SUBFAT -> {
+                            fatData.subcutaneousfat = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_VISFAT -> {
+                            fatData.viscerallevel = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_WATER -> {
+                            fatData.tbw = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_BODYFAT -> {
+                            fatData.fat = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_BONE -> {
+                            fatData.bonemass = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_BODY_AGE -> {
+                            fatData.bodyage = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_SCORE -> {
+                            fatData.score = data.value.toFloat()
+                        }
+                        QNIndicator.TYPE_BODY_SHAPE -> {
+                            val bodyshapes =
+                                arrayOf(
+                                    "未知体型",
+                                    "隐形肥胖型",
+                                    "运动不足型",
+                                    "偏瘦型",
+                                    "标准型",
+                                    "偏瘦肌肉型",
+                                    "肥胖型",
+                                    "偏胖型",
+                                    "标准肌肉型",
+                                    "非常肌肉型"
+                                )
+                            fatData.bodyshape = bodyshapes[data.value.toInt()]
+                        }
                     }
                     i++
                 }

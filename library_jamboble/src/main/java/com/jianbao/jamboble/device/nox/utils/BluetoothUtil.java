@@ -1,13 +1,10 @@
 package com.jianbao.jamboble.device.nox.utils;
 
-import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothProfile;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.jianbao.jamboble.App;
 import com.jianbao.jamboble.device.nox.BleDevice;
 
 import java.lang.reflect.Method;
@@ -139,32 +136,32 @@ public class BluetoothUtil {
             return;
         }
 
-        adapter.getProfileProxy(App.context, new BluetoothProfile.ServiceListener() {
-            @Override
-            public void onServiceConnected(int profile, BluetoothProfile proxy) {
-                if(profile == BluetoothProfile.A2DP){
-                    try {
-                        BluetoothA2dp mBluetoothA2dp = (BluetoothA2dp)proxy;
-                        if(mBluetoothA2dp.getConnectionState(device) != BluetoothProfile.STATE_CONNECTED){
-                            Method connect = mBluetoothA2dp.getClass().getDeclaredMethod("connect", BluetoothDevice.class);
-                            connect.setAccessible(true);
-                            Object res = connect.invoke(mBluetoothA2dp, device);
-                            Log.d(TAG," connectBluetooth res:" + res);
-                        }else{
-                            Log.d(TAG," connectBluetooth already connected");
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Log.d(TAG," connectBluetooth fail----------");
-                    }
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(int profile) {
-
-            }
-        },BluetoothProfile.A2DP);
+//        adapter.getProfileProxy(App.context, new BluetoothProfile.ServiceListener() {
+//            @Override
+//            public void onServiceConnected(int profile, BluetoothProfile proxy) {
+//                if(profile == BluetoothProfile.A2DP){
+//                    try {
+//                        BluetoothA2dp mBluetoothA2dp = (BluetoothA2dp)proxy;
+//                        if(mBluetoothA2dp.getConnectionState(device) != BluetoothProfile.STATE_CONNECTED){
+//                            Method connect = mBluetoothA2dp.getClass().getDeclaredMethod("connect", BluetoothDevice.class);
+//                            connect.setAccessible(true);
+//                            Object res = connect.invoke(mBluetoothA2dp, device);
+//                            Log.d(TAG," connectBluetooth res:" + res);
+//                        }else{
+//                            Log.d(TAG," connectBluetooth already connected");
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        Log.d(TAG," connectBluetooth fail----------");
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onServiceDisconnected(int profile) {
+//
+//            }
+//        },BluetoothProfile.A2DP);
     }
 
 }

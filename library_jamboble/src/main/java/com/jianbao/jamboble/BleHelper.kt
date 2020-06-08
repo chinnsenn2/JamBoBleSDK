@@ -1,7 +1,6 @@
 package com.jianbao.jamboble
 
 import android.Manifest
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothAdapter.LeScanCallback
 import android.bluetooth.BluetoothDevice
@@ -25,12 +24,12 @@ import com.dovar.dtoast.DToast
 import com.jianbao.jamboble.BTControlManager.BTControlListener
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.IBleStatusCallback
-import com.jianbao.jamboble.callbacks.IBleStatusCallback.State.Companion.CONNECTED
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
 import com.jianbao.jamboble.data.BTData
+import com.jianbao.jamboble.data.CholestenoneData
+import com.jianbao.jamboble.data.UricAcidData
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.device.BTDeviceSupport
-import com.jianbao.jamboble.device.oximeter.FingerOximeterCallback
 import com.jianbao.jamboble.device.oximeter.OximeterDevice
 import com.jianbao.jamboble.device.oximeter.OximeterReader
 import com.jianbao.jamboble.device.oximeter.OximeterWriter
@@ -69,11 +68,34 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     private var mOximeterReader: OximeterReader? = null
     private var mOximeterWriter: OximeterWriter? = null
     private var mFingerOximeter: FingerOximeter? = null
+    private var mIFingerOximeterCallBack: IFingerOximeterCallBack? = null
 
     companion object {
         private const val TAG = "BleHelper"
-        private const val MESSAGE_SCAN = 0
-        private const val REQUEST_ENABLE_BT = 1
+        const val MESSAGE_SCAN = 1000
+        const val MESSAGE_TIMEOUT = 1001
+        private const val REQUEST_ENABLE_BT = 0x2
+
+        @JvmStatic
+        fun getWeightInstance(activity: FragmentActivity) =
+            BleHelper(activity, BTDeviceSupport.DeviceType.FAT_SCALE)
+
+        @JvmStatic
+        fun getBloodPressureInstance(activity: FragmentActivity) =
+            BleHelper(activity, BTDeviceSupport.DeviceType.BLOOD_PRESSURE)
+
+        @JvmStatic
+        fun getBloodSugarInstance(activity: FragmentActivity) =
+            BleHelper(activity, BTDeviceSupport.DeviceType.BLOOD_SUGAR)
+
+        @JvmStatic
+        fun getUricAcidInstance(activity: FragmentActivity) =
+            BleHelper(activity, BTDeviceSupport.DeviceType.URIC_ACID)
+
+        @JvmStatic
+        fun getThreeOnOneInstance(activity: FragmentActivity) =
+            BleHelper(activity, BTDeviceSupport.DeviceType.THREEONONE)
+
     }
 
     init {
@@ -101,6 +123,10 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
             showToast("请调用 updateQnUser 初始化用户数据")
             return
         }
+        if (mDeviceType == BTDeviceSupport.DeviceType.OXIMETER && mIFingerOximeterCallBack == null) {
+            showToast("请调用 setFingerOximeterCallback 设置血氧数据回调")
+            return
+        }
         //检测手机是否支持蓝牙设备连接
         activityReference.get()?.also {
             if (it.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -125,7 +151,7 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
         )
     }
 
-    private fun initBluetooth(activity: Activity) {
+    private fun initBluetooth(activity: FragmentActivity) {
         if (mBluetoothAdapter == null) {
             val bluetoothManager =
                 activity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -158,7 +184,7 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
             val enabled = it.isEnabled
             //            mBleDataCallback.onLocalBTEnabled(enabled);
             if (!enabled) {
-                onBTStateChanged(IBleStatusCallback.State.NOT_FOUND)
+                onBTStateChanged(BleState.NOT_FOUND)
                 val enableBtIntent = Intent(
                     BluetoothAdapter.ACTION_REQUEST_ENABLE
                 )
@@ -178,16 +204,23 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     }
 
     /**
-     *
+     * 蓝牙状态回调
      */
     fun setBleStatusCallback(callback: IBleStatusCallback) {
         this.mBleStatusCallback = callback
     }
 
     /**
+     * 血氧数据回调
+     */
+    fun setFingerOximeterCallback(callback: IFingerOximeterCallBack) {
+        this.mIFingerOximeterCallBack = callback
+    }
+
+    /**
      * 动态数据回调（仅体重支持
      */
-    private fun setUnSteadyValueCallBack(callback: UnSteadyValueCallBack) {
+    fun setUnSteadyValueCallBack(callback: UnSteadyValueCallBack) {
         this.mUnSteadyValueCallBack = callback
     }
 
@@ -200,7 +233,9 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
             return
         }
         this.mQnUser = qnUser
-        QnHelper.instance.updateQNUser(qnUser)
+        activityReference.get()?.also {
+            QnHelper.getInstance(it).updateQNUser(qnUser)
+        }
     }
 
     /**
@@ -209,6 +244,8 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
      * @param enable
      */
     fun scanLeDevice(enable: Boolean) {
+        mHandler.removeMessages(MESSAGE_SCAN)
+        removeMessageTimeout()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             scanLeDeviceNewApi(enable)
         } else {
@@ -218,7 +255,6 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun scanLeDeviceNewApi(enable: Boolean) {
-        mHandler.removeMessages(MESSAGE_SCAN)
         mBluetoothAdapter?.also {
             if (enable) {
                 if (!it.isEnabled) {
@@ -236,6 +272,8 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
                 }
                 mScanning = true
                 scanner.startScan(mNewScanCallback)
+                onBTStateChanged(BleState.SCAN_START)
+                sendMessageTimeout()
             } else {
                 if (mScanning) {
                     if (it.isEnabled) {
@@ -250,7 +288,6 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
 
     @Suppress("DEPRECATION")
     private fun scanLeDeviceLowApi(enable: Boolean) {
-        mHandler.removeMessages(MESSAGE_SCAN)
         mBluetoothAdapter?.also {
             if (enable) {
                 if (!it.isEnabled) {
@@ -268,7 +305,8 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
                 val ret = it.startLeScan(mLeScanCallback)
                 if (ret) {
                     mScanning = true
-                    onBTStateChanged(IBleStatusCallback.State.SCAN_START)
+                    onBTStateChanged(BleState.SCAN_START)
+                    sendMessageTimeout()
                 } else {
                     mHandler.sendEmptyMessageDelayed(MESSAGE_SCAN, 1000)
                 }
@@ -315,6 +353,18 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
         }
     }
 
+    protected fun removeMessageTimeout() {
+        mHandler.removeMessages(MESSAGE_TIMEOUT)
+    }
+
+    protected fun sendMessageTimeout() {
+        removeMessageTimeout()
+        mHandler.sendEmptyMessageDelayed(
+            MESSAGE_TIMEOUT,
+            30000
+        )
+    }
+
     val isEnable: Boolean
         get() = mBluetoothAdapter?.isEnabled ?: false
 
@@ -332,7 +382,7 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
                         REQUEST_ENABLE_BT
                     )
                 } else {
-                    onBTStateChanged(IBleStatusCallback.State.SCAN_START)
+                    onBTStateChanged(BleState.SCAN_START)
                     scanLeDevice(true)
                 }
             } ?: also {
@@ -382,7 +432,10 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
         if (mBleStatusCallback != null) {
             mBleStatusCallback = null
         }
-        QnHelper.instance.dispose()
+
+        activityReference.get()?.also {
+            QnHelper.getInstance(it).dispose()
+        }
     }
 
     private fun receive(state: Int) {
@@ -391,7 +444,7 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
                 scanLeDevice(true)
             BluetoothAdapter.STATE_TURNING_OFF, BluetoothAdapter.STATE_OFF -> {
                 //                mBleDataCallback.onLocalBTEnabled(false);
-                onBTStateChanged(IBleStatusCallback.State.NOT_FOUND)
+                onBTStateChanged(BleState.NOT_FOUND)
                 scanLeDevice(false)
             }
             else -> {
@@ -408,23 +461,31 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
         println("BleHelper.checkDevice ${device?.name.toString()}")
         device?.also { blDevice ->
             btDevice?.also { btDevice ->
-                mBleStatusCallback?.also { callback ->
-                    println("device.getAddress() = " + blDevice.address)
-                    scanLeDevice(false)
-                    Log.i(TAG, "已找到设备，准备连接...")
-                    mBleStatusCallback!!.onBTDeviceFound(device)
-                    if (BTDeviceSupport.isYolandaFatScale(btDevice)) {
-                        if (mBTControlManager != null) {
-                            mBTControlManager!!.connectDevice = btDevice
-                        }
+                println("device.getAddress() = " + blDevice.address)
+                onBTDeviceFound(device)
+                scanLeDevice(false)
+                Log.i(TAG, "已找到设备，准备连接...")
+                if (BTDeviceSupport.isYolandaFatScale(btDevice)) {
+                    if (mBTControlManager != null) {
+                        mBTControlManager!!.connectDevice = btDevice
+                    }
 
-                        QnHelper.instance.also {
-                            it.connectDevice(this, mQnUser!!, device, btDevice, rssi, scanRecord)
+                    activityReference.get()?.also {
+                        QnHelper.getInstance(it).also { helper ->
+                            helper.connectDevice(
+                                this,
+                                mQnUser!!,
+                                device,
+                                btDevice,
+                                rssi,
+                                scanRecord
+                            )
                         }
-                    } else {
-                        if (mBTControlManager != null) {
-                            mBTControlManager!!.connect(btDevice, device.address)
-                        }
+                    }
+
+                } else {
+                    if (mBTControlManager != null) {
+                        mBTControlManager!!.connect(btDevice, device.address)
                     }
                 }
             }
@@ -436,26 +497,46 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
             scanLeDevice(true)
         } else if (connected) {
             //连接成功
-            onBTStateChanged(CONNECTED)
+            onBTStateChanged(BleState.CONNECTED)
         }
     }
 
     /**
      * 蓝牙回调
-     * @param state IBleStatusCallback.State
+     * @param state BleState
      */
-    fun onBTStateChanged(state: Int) {
+    fun onBTStateChanged(state: BleState) {
+        removeMessageTimeout()
         mDataCallback?.onBTStateChanged(state)
     }
 
+    private var mLastDataFlag = ""
+
     fun onBTDataReceived(btData: BTData?) {
         btData?.also {
-            mDataCallback?.onBTDataReceived(btData)
-        }
-    }
+            when (btData) {
+                is UricAcidData -> {
+                    val lastTime: String =
+                        btData.mYear.toString() + btData.mMonth.toString() + btData.mday.toString() + btData.mHour.toString() + btData.mMinute.toString() + btData.mUricAcid.toString()
+                    if (lastTime != mLastDataFlag) {
+                        mDataCallback?.onBTDataReceived(btData)
+                        mLastDataFlag = lastTime
+                    }
+                }
+                is CholestenoneData -> {
+                    val lastTime: String =
+                        btData.mYear.toString() + btData.mMonth.toString() + btData.mday.toString() + btData.mHour.toString() + btData.mMinute.toString() + btData.cholestenone.toString()
+                    if (lastTime != mLastDataFlag) {
+                        mDataCallback?.onBTDataReceived(btData)
+                        mLastDataFlag = lastTime
+                    }
+                }
+                else -> {
+                    mDataCallback?.onBTDataReceived(btData)
+                }
+            }
 
-    fun onLocalBTEnabled(enabled: Boolean) {
-//        mBleDataCallback.onLocalBTEnabled(enabled);
+        }
     }
 
     fun onUnsteadyValue(value: Float) {
@@ -476,11 +557,11 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
                     mFingerOximeter = FingerOximeter(
                         mOximeterReader,
                         mOximeterWriter,
-                        FingerOximeterCallback(this)
+                        mIFingerOximeterCallBack
                     )
-                    mFingerOximeter?.also {
-                        it.Start()
-                        it.SetWaveAction(true)
+                    mFingerOximeter?.also { oximeter ->
+                        oximeter.Start()
+                        oximeter.SetWaveAction(true)
                     }
                 }
             }
@@ -565,8 +646,14 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     private class ScanHandler internal constructor(helper: BleHelper) : Handler() {
         var reference = WeakReference(helper)
         override fun handleMessage(msg: Message) {
-            if (msg.what == MESSAGE_SCAN) {
-                reference.get()?.scanLeDevice(true)
+            when (msg.what) {
+                MESSAGE_SCAN -> {
+                    reference.get()?.scanLeDevice(true)
+                }
+                MESSAGE_TIMEOUT -> {
+                    reference.get()?.onBTStateChanged(BleState.TIMEOUT)
+                    reference.get()?.scanLeDevice(false)
+                }
             }
         }
 

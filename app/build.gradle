@@ -36,12 +36,12 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':library_jamboble')
 
+    implementation rootProject.ext.dependencies.appcompatx
     implementation rootProject.ext.dependencies.core_ktx
     implementation rootProject.ext.dependencies.logger
     implementation rootProject.ext.dependencies.multidex
     implementation rootProject.ext.dependencies.gson
     implementation rootProject.ext.dependencies.kotlin
     implementation rootProject.ext.dependencies.constraintlayout
-    implementation rootProject.ext.dependencies.appcompatx
     annotationProcessor rootProject.ext.dependencies.annotationx
 }

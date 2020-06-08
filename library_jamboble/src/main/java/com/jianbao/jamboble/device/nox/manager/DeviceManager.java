@@ -5,7 +5,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.jianbao.jamboble.App;
 import com.jianbao.jamboble.device.nox.BaseCallback;
 import com.jianbao.jamboble.device.nox.BleDevice;
 import com.jianbao.jamboble.device.nox.ConnectionState;
@@ -109,7 +108,7 @@ public abstract class DeviceManager implements IDeviceManager {
         DeviceManager manager = Nox2BManager.getInstance(context);
         if (manager != null) {
             //manager.mContext = context;
-            manager.mContext = App.context;
+            manager.mContext = context;
             if (manager.device == null) {
                 manager.device = device;
             } else {

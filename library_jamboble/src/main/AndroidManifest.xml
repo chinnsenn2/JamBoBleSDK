@@ -13,7 +13,7 @@
         android:name="android.hardware.bluetooth_le"
         android:required="false" />
 
-    <application android:name="App">
+    <application>
         <service
             android:name="com.jianbao.jamboble.BluetoothLeService"
             android:exported="false" />

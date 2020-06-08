@@ -16,8 +16,6 @@ public class FatScaleData extends BTData {
 	public float fat;
 	//水分
 	public float tbw;
-	//肌肉
-	//public float mus;
 	//BMI
 	public float bmi;
 	//皮下脂肪率
