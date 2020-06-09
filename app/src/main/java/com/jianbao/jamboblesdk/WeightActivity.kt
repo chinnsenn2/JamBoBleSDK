@@ -6,11 +6,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.jianbao.jamboble.BleHelper
 import com.jianbao.jamboble.BleState
-import com.jianbao.jamboble.QnUser
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.FatScaleData
+import com.jianbao.jamboble.data.QnUser
 import java.util.*
 
 class WeightActivity : AppCompatActivity() {
@@ -72,6 +72,39 @@ class WeightActivity : AppCompatActivity() {
                     if (data is FatScaleData) {
                         mTvValue.text = data.toString()
                     }
+                    /*
+                    //体重
+                    public float weight;
+                    //脂肪
+                    public float fat;
+                    //水分
+                    public float tbw;
+                    //BMI
+                    public float bmi;
+                    //皮下脂肪率
+                    public float subcutaneousfat;
+                    //内脏脂肪等级
+                    public float viscerallevel;
+                    //骨骼肌率
+                    public float skeletal;
+                    //骨量
+                    public float bonemass;
+                    //蛋白质含量
+                    public float proteins;
+                    //基础代谢
+                    public float metabolic;
+                    //体年龄
+                    public float bodyage;
+                    //分数
+                    public float score;
+                    //体型
+                    public String bodyshape;
+                     */
+                }
+
+                override fun onLocalBTEnabled(enabled: Boolean) {
+
+                    //蓝牙授权失败
                 }
 
             })

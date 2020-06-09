@@ -19,3 +19,44 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class com.jianbao.jamboble.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.jianbao.jamboble.draw.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.jianbao.jamboble.callbacks.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.jianbao.jamboble.data.* { *;
+}
+-keep class com.jianbao.jamboble.device.* {
+ public <fields>;
+ public <methods>;
+
+ }
+ -keep class com.jianbao.jamboble.draw.* {
+ public <fields>;
+ public <methods>;
+
+ }
+-keep class com.jianbao.jamboble.*.*.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.creative.*.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.qingniu.scale.model.BleScaleData{*;}
+-keep class * implements android.os.Parcelable{ # 保持Parcelable不被混淆
+    public static final android.os.Parcelable.Creator *;
+}

@@ -65,6 +65,10 @@ class BloodThreeOnOneActivity : AppCompatActivity() {
                     }
                 }
 
+                override fun onLocalBTEnabled(enabled: Boolean) {
+                    //蓝牙授权失败
+                }
+
             }
         )
 

@@ -14,7 +14,6 @@ ext {
             rxJavaVersion   : '2.2.13',
             rxAndroidVersion: '2.1.1',
     ]
-
     dependencies = [
             appcompatx                   : 'androidx.appcompat:appcompat:1.1.0',
             core_ktx                     : 'androidx.core:core-ktx:1.2.0',
@@ -22,6 +21,7 @@ ext {
             recyclerviewx_selection      : 'androidx.recyclerview:recyclerview-selection:1.0.0',
             annotationx                  : 'androidx.annotation:annotation:1.1.0',
             design                       : 'com.google.android.material:material:1.0.0',
+            localbroadcastmanagerx       : 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0',
 
             cardview                     : "androidx.cardview:cardview:1.0.0",
 
@@ -99,4 +99,5 @@ ext {
             DToast                       : 'com.github.Dovar66:DToast:1.1.6',
 
     ]
+
 }

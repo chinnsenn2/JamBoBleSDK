@@ -13,13 +13,25 @@ android {
         versionName "1.0"
         multiDexEnabled true
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    Properties properties = new Properties()
+    properties.load(new FileInputStream(file("../signing.properties")))
+
+    signingConfigs {
+        release {
+            keyAlias properties["KEY_ALIAS"]
+            keyPassword properties["KEY_PASSWORD"]
+            storeFile file(properties["KEYSTORE_FILE"])
+            storePassword properties["KEYSTORE_PASSWORD"]
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -46,6 +58,5 @@ dependencies {
     implementation rootProject.ext.dependencies.rxjava2
     implementation rootProject.ext.dependencies.rxandroid2
     implementation rootProject.ext.dependencies.DToast
-    implementation rootProject.ext.dependencies.qnscalesdkX
     annotationProcessor rootProject.ext.dependencies.annotationx
 }

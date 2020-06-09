@@ -6,4 +6,5 @@ import com.jianbao.jamboble.data.BTData
 interface BleDataCallback {
     fun onBTStateChanged(state: BleState)
     fun onBTDataReceived(data: BTData?)
+    fun onLocalBTEnabled(enabled: Boolean)
 }

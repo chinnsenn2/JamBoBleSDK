@@ -27,6 +27,7 @@ import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.CholestenoneData
+import com.jianbao.jamboble.data.QnUser
 import com.jianbao.jamboble.data.UricAcidData
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.device.BTDeviceSupport
@@ -144,8 +145,14 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     private fun checkBle(activity: FragmentActivity) {
         // 初始化 Bluetooth adapter,
         // 通过蓝牙管理器得到一个参考蓝牙适配器(API必须在以上android4.3或以上和版本)
-        PermissionsUtil.requestMustNot(
-            activity, PermissionsUtil.OnPermissionGranted { initBluetooth(activity) },
+        PermissionsUtil.requestDonotHandler(
+            activity, PermissionsUtil.OnPermissionDonotHandler { context, granted ->
+                if (granted) {
+                    initBluetooth(activity)
+                } else {
+                    onLocalBTEnabled(false)
+                }
+            },
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
         )
@@ -182,7 +189,6 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
         // 为了确保设备上蓝牙能使用, 如果当前蓝牙设备没启用,弹出对话框向用户要求授予权限来启用
         mBluetoothAdapter?.also {
             val enabled = it.isEnabled
-            //            mBleDataCallback.onLocalBTEnabled(enabled);
             if (!enabled) {
                 onBTStateChanged(BleState.NOT_FOUND)
                 val enableBtIntent = Intent(
@@ -440,10 +446,9 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
 
     private fun receive(state: Int) {
         when (state) {
-            BluetoothAdapter.STATE_ON -> //mBleDataCallback.onLocalBTEnabled(true);
+            BluetoothAdapter.STATE_ON ->
                 scanLeDevice(true)
             BluetoothAdapter.STATE_TURNING_OFF, BluetoothAdapter.STATE_OFF -> {
-                //                mBleDataCallback.onLocalBTEnabled(false);
                 onBTStateChanged(BleState.NOT_FOUND)
                 scanLeDevice(false)
             }
@@ -508,6 +513,10 @@ class BleHelper(activity: FragmentActivity, deviceType: BTDeviceSupport.DeviceTy
     fun onBTStateChanged(state: BleState) {
         removeMessageTimeout()
         mDataCallback?.onBTStateChanged(state)
+    }
+
+    fun onLocalBTEnabled(enabled: Boolean) {
+        mDataCallback?.onLocalBTEnabled(enabled);
     }
 
     private var mLastDataFlag = ""

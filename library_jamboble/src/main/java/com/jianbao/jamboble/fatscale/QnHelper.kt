@@ -3,15 +3,12 @@ package com.jianbao.jamboble.fatscale
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import com.jianbao.jamboble.BleHelper
 import com.jianbao.jamboble.BleState
-import com.jianbao.jamboble.BuildConfig
-import com.jianbao.jamboble.QnUser
 import com.jianbao.jamboble.data.FatScaleData
+import com.jianbao.jamboble.data.QnUser
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.utils.LogUtils
-import com.qingniu.qnble.utils.QNLogUtils
 import com.yolanda.health.qnblesdk.constant.QNIndicator
 import com.yolanda.health.qnblesdk.listener.QNBleConnectionChangeListener
 import com.yolanda.health.qnblesdk.listener.QNScaleDataListener
@@ -46,17 +43,14 @@ class QnHelper private constructor(context: Context) {
 
         private var mQnInitTime = 0
 
+        @JvmStatic
         private fun initQnSDK(context: Context?) {
             context?.also { c ->
                 c.packageManager?.also { packageManager ->
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                         val encryptPath = "file:///android_asset/hzyb20160314175503.qn"
                         QNBleApi.getInstance(c).also {
-                            QNLogUtils.setLogEnable(BuildConfig.DEBUG)
                             it.initSdk("hzyb20160314175503", encryptPath) { code, msg ->
-                                Log.d(
-                                    "BaseApplication", "code = [$code], msg = [$msg]"
-                                )
                                 if (code != 0) {
                                     if (mQnInitTime < 3) {
                                         mQnInitTime += 1

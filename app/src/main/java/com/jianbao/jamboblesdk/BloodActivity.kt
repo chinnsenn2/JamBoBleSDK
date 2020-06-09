@@ -27,9 +27,7 @@ class BloodActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blood)
-
         title = "血压测量"
-
         mBleHelper.setDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
@@ -55,16 +53,30 @@ class BloodActivity : AppCompatActivity() {
 
                 override fun onBTDataReceived(data: BTData?) {
                     if (data is BloodPressureData) {
+                        /*
+                        //收缩压
+                        public int systolicPressur
+                        //舒张压
+                        public int diastolicPressu
+                        //心率
+                        public int heartRate;
+                         */
                         mTvValue.text = data.toString()
                     }
                     //血糖数据
 //                    if (data is BloodSugarData) {
+                    //data.bloodSugar 血糖值 单位 Mmol
 //                        mTvValue.text = data.toString()
 //                    }
                     //尿酸数据
 //                    if (data is UricAcidData) {
+                    //data.mUricAcid 尿酸值 单位mmol/L
 //                        mTvValue.text = data.toString()
 //                    }
+                }
+
+                override fun onLocalBTEnabled(enabled: Boolean) {
+                    //蓝牙授权失败
                 }
 
             }

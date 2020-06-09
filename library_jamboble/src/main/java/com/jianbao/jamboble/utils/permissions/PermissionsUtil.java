@@ -8,7 +8,7 @@ import android.provider.Settings;
 
 import androidx.fragment.app.FragmentActivity;
 
-import com.jianbao.jamboble.CommonConfirmNoTipDialog;
+import com.jianbao.jamboble.utils.LogUtils;
 import com.orhanobut.logger.Logger;
 
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class PermissionsUtil {
                         if (aBoolean) {
                             permissionGranted.onPermissionGranted(fragmentActivity);
                         } else {
-                            handlerPermissionDenied(fragmentActivity, permission);
+                            LogUtils.e("授权失败");
                         }
                     }
 
@@ -119,30 +119,6 @@ public class PermissionsUtil {
                 });
     }
 
-    /**
-     * PERMISSION_DENIED
-     */
-    public static void handlerPermissionDenied(final Context context, final String... permissions) {
-        //点了多选框再取消,就走这里
-        //可以中间加个对话框
-        //引导走设置界面
-        final CommonConfirmNoTipDialog dialog = new CommonConfirmNoTipDialog(context);
-        StringBuilder builder = new StringBuilder();
-        builder.append("在设置-应用-智慧E保-权限中开启");
-        for (String permission : permissions) {
-            if (permissionDescs.containsKey(permission)) {
-                builder.append(permissionDescs.get(permission));
-                builder.append(",");
-            }
-        }
-        builder.append("以正常使用智慧E保功能");
-        dialog.show();
-        dialog.setTips(builder.toString());
-        dialog.setLeftText("取消");
-        dialog.setLeftClickListener(() -> dialog.dismiss());
-        dialog.setRightText("去设置");
-        dialog.setRightClickListener(() -> startSystemSetting(context));
-    }
 
     public static void startSystemSetting(Context context) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);

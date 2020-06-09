@@ -1,4 +1,4 @@
-package com.jianbao.jamboble
+package com.jianbao.jamboble.data
 
 import java.util.*
 
