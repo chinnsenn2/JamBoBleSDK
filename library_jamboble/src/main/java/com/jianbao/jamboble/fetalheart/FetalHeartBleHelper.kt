@@ -77,10 +77,6 @@ class FetalHeartBleHelper private constructor() : BaseBleHelper() {
 
     override val TAG: String = "FetalHeartHelper"
 
-    override val mHandler: ScanHandler by lazy {
-        ScanHandler(this)
-    }
-
     fun getBlueToothDevice() = mSearchBluetoothDevice
 
     fun setBlueToothDevice(btd: BluetoothDevice) {
@@ -92,6 +88,7 @@ class FetalHeartBleHelper private constructor() : BaseBleHelper() {
             println(d.toString())
             val btDevice = BTDeviceSupport.checkSupport(d, BTDeviceSupport.DeviceType.FETAL_HEART)
             btDevice?.also {
+                scanLeDevice(false)
                 this.mSearchBluetoothDevice = d
                 onBTDeviceFound(d)
             }

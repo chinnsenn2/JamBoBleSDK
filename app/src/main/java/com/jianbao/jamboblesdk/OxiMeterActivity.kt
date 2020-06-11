@@ -8,15 +8,15 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.creative.FingerOximeter.FingerOximeter
+import com.jianbao.jamboble.BaseBleHelper.Companion.MESSAGE_TIMEOUT
 import com.jianbao.jamboble.BleHelper
-import com.jianbao.jamboble.BleHelper.Companion.MESSAGE_TIMEOUT
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.OximeterData
 import com.jianbao.jamboble.data.SpO2Data
-import com.jianbao.jamboble.device.BTDevice
+import com.jianbao.jamboble.device.BTDeviceSupport
 import com.jianbao.jamboble.device.oximeter.FingerOximeterCallback
 import com.jianbao.jamboble.device.oximeter.OximeterDevice
 import com.jianbao.jamboble.device.oximeter.OximeterReader
@@ -29,25 +29,21 @@ class OxiMeterActivity : AppCompatActivity() {
     private val mTvValueRealtime by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value_realtime) }
     private val mBtnOpenBle by lazy(LazyThreadSafetyMode.NONE) { findViewById<Button>(R.id.btn_open_ble) }
 
-    private val mBleHelper by lazy {
-        BleHelper.getThreeOnOneInstance(this)
-    }
-
-    private lateinit var mHandler: Handler
-
     private var mFingerOximeter: FingerOximeter? = null
     private var mOximeterWriter: OximeterWriter? = null
     private var mOximeterReader: OximeterReader? = null
+
+    private lateinit var mHandler: Handler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_oxi_meter)
 
         mBtnOpenBle.setOnClickListener {
-            mBleHelper.doReSearch()
+            BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.OXIMETER)
         }
         //通用数据回调
-        mBleHelper.setDataCallBack(
+        BleHelper.instance.setDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -72,7 +68,7 @@ class OxiMeterActivity : AppCompatActivity() {
 
                 override fun onBTDataReceived(data: BTData?) {
                     if (data is OximeterData) {
-                        val btDevice = mBleHelper.getConnectedDevice()
+                        val btDevice = BleHelper.instance.getConnectedDevice()
                         if (btDevice is OximeterDevice) {
                             btDevice.oximeterHelper.also {
                                 it.addBuffer(data.data)
@@ -87,13 +83,13 @@ class OxiMeterActivity : AppCompatActivity() {
 
             })
 
-        mBleHelper.setBleStatusCallback(
+        BleHelper.instance.setBleStatusCallback(
             object : IBleStatusCallback {
                 override fun onBTDeviceFound(device: BluetoothDevice?) {
                 }
 
                 override fun onNotification() {
-                    mBleHelper.getConnectedDevice().also {
+                    BleHelper.instance.getConnectedDevice().also {
                         if (it is OximeterDevice) {
                             it.oximeterHelper?.also { helper ->
                                 mOximeterReader = OximeterReader(helper)
@@ -132,7 +128,7 @@ class OxiMeterActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         //释放资源
-        mBleHelper.destroy()
+        BleHelper.instance.destroy()
         super.onDestroy()
     }
 
@@ -177,10 +173,10 @@ class OxiMeterActivity : AppCompatActivity() {
                         }
 
                         //需要等待自动关闭
-                        act.mBleHelper.onBTStateChanged(BleState.SCAN_START)
+                        BleHelper.instance.onBTStateChanged(BleState.SCAN_START)
                     }
                     MESSAGE_TIMEOUT -> {
-                        act.mBleHelper.onBTStateChanged(BleState.TIMEOUT)
+                        BleHelper.instance.onBTStateChanged(BleState.TIMEOUT)
                     }
                     else -> {
 

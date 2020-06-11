@@ -9,16 +9,9 @@ import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.BloodPressureData
+import com.jianbao.jamboble.device.BTDeviceSupport
 
 class BloodActivity : AppCompatActivity() {
-    //初始化 血压 blehelper
-    private val mBleHelper by lazy(LazyThreadSafetyMode.NONE) {
-        BleHelper.getBloodPressureInstance(this)
-       /* //初始化 血糖 blehelper
-         BleHelper.getBloodSugarInstance(this)
-        //初始化 尿酸 blehelper
-         BleHelper.getUricAcidInstance(this)*/
-    }
 
     private val mTvValue by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value) }
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
@@ -28,7 +21,7 @@ class BloodActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blood)
         title = "血压测量"
-        mBleHelper.setDataCallBack(
+        BleHelper.instance.setDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -83,13 +76,15 @@ class BloodActivity : AppCompatActivity() {
         )
 
         mBtnOpenBle.setOnClickListener {
-            mBleHelper.doReSearch()
+            BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.BLOOD_PRESSURE)
+//            BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.BLOOD_SUGAR)
+//            BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.URIC_ACID)
         }
     }
 
     override fun onDestroy() {
         //释放资源
-        mBleHelper.destroy()
+        BleHelper.instance.destroy()
         super.onDestroy()
     }
 }

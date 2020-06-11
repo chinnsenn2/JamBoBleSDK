@@ -13,6 +13,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -28,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class BaseBleHelper {
     abstract val TAG: String
-    abstract val mHandler: ScanHandler
 
     abstract fun checkDevice(
         device: BluetoothDevice?,
@@ -85,6 +85,12 @@ abstract class BaseBleHelper {
     private val mScanRunnable: ScanRunnable by lazy(LazyThreadSafetyMode.NONE) {
         ScanRunnable(this)
     }
+    val mHandler: ScanHandler by lazy {
+        ScanHandler(this)
+    }
+
+    val isEnable: Boolean
+        get() = mBluetoothAdapter?.isEnabled ?: false
 
     /**
      * 断开蓝牙时是否需要自动重新扫描
@@ -113,30 +119,50 @@ abstract class BaseBleHelper {
         this.mBleStatusCallback = callback
     }
 
+    fun doSearch(activity: FragmentActivity?) {
+        activity?.also {
+            mRegisterActReference?.get()?.also { ra ->
+                if (it != ra) {
+                    destroy()
+                }
+            }
+            this.mRegisterActReference = WeakReference(it)
+            // 为了确保设备上蓝牙能使用, 如果当前蓝牙设备没启用,弹出对话框向用户要求授予权限来启用
+            mBluetoothAdapter?.also { adapter ->
+                val enabled = adapter.isEnabled
+                if (!enabled) {
+                    val enableBtIntent = Intent(
+                        BluetoothAdapter.ACTION_REQUEST_ENABLE
+                    )
+                    it.startActivityForResult(
+                        enableBtIntent,
+                        REQUEST_ENABLE_BT
+                    )
+                } else {
+                    onBTStateChanged(BleState.SCAN_START)
+                    scanLeDevice(true)
+                }
+            } ?: also {
+                openBluetooth()
+            }
+        }
+    }
+
     /**
      * 初始化蓝牙对象，我们采用的蓝牙4.0，android 4.3以上支持
      * @param activity 用于查询蓝牙支持信息，以及注册 BroadCastReceiver
      */
-    fun openBluetooth(activity: FragmentActivity?) {
-        mExecutor.execute {
-            //检测手机是否支持蓝牙设备连接
-            activity?.also {
+    fun openBluetooth() {
+        //检测手机是否支持蓝牙设备连接
+        mRegisterActReference?.get()?.also {
+            it.runOnUiThread {
                 if (it.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                    mRegisterActReference?.get()?.also { ra ->
-                        if (it != ra) {
-                            destroy()
-                        }
-                    }
-                    this.mRegisterActReference = WeakReference(it)
                     checkBle()
                 } else {
-                    it.runOnUiThread{
-                        showToast(it, "您的手机不支持蓝牙功能")
-                    }
+                    showToast(it, "您的手机不支持蓝牙功能")
                 }
             }
         }
-
     }
 
     fun checkBle() {
@@ -213,10 +239,13 @@ abstract class BaseBleHelper {
     open fun destroy() {
         mRegisterActReference?.also {
             it.get()?.also {
+                //注销广播
                 unregisterReceiver()
             }
             it.clear()
         }
+
+        scanLeDevice(false)
         mRegisterActReference = null
         mBluetoothAdapter = null
         mBTControlManager = null
@@ -233,7 +262,7 @@ abstract class BaseBleHelper {
      * @param enable
      */
     fun scanLeDevice(enable: Boolean) {
-        mHandler.removeMessages(BleHelper.MESSAGE_SCAN)
+        mHandler.removeMessages(MESSAGE_SCAN)
         removeMessageTimeout()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             scanLeDeviceNewApi(enable)
@@ -310,7 +339,7 @@ abstract class BaseBleHelper {
                     onBTStateChanged(BleState.SCAN_START)
                     sendMessageTimeout()
                 } else {
-                    mHandler.sendEmptyMessageDelayed(BleHelper.MESSAGE_SCAN, 1000)
+                    mHandler.sendEmptyMessageDelayed(MESSAGE_SCAN, 1000)
                 }
                 Log.i(TAG, "正在查找设备...$ret")
             } else {
@@ -325,14 +354,14 @@ abstract class BaseBleHelper {
         }
     }
 
-    private fun removeMessageTimeout() {
-        mHandler.removeMessages(BleHelper.MESSAGE_TIMEOUT)
+    fun removeMessageTimeout() {
+        mHandler.removeMessages(MESSAGE_TIMEOUT)
     }
 
     private fun sendMessageTimeout() {
         removeMessageTimeout()
         mHandler.sendEmptyMessageDelayed(
-            BleHelper.MESSAGE_TIMEOUT,
+            MESSAGE_TIMEOUT,
             30000
         )
     }
@@ -462,10 +491,10 @@ abstract class BaseBleHelper {
         var reference = WeakReference(bleHelper)
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                BleHelper.MESSAGE_SCAN -> {
+                MESSAGE_SCAN -> {
                     reference.get()?.scanLeDevice(true)
                 }
-                BleHelper.MESSAGE_TIMEOUT -> {
+                MESSAGE_TIMEOUT -> {
                     reference.get()?.onBTStateChanged(BleState.TIMEOUT)
                     reference.get()?.scanLeDevice(false)
                 }

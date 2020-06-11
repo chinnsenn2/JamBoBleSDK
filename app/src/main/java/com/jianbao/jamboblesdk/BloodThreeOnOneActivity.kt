@@ -11,6 +11,7 @@ import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.BloodPressureData
 import com.jianbao.jamboble.data.BloodSugarData
 import com.jianbao.jamboble.data.CholestenoneData
+import com.jianbao.jamboble.device.BTDeviceSupport
 
 class BloodThreeOnOneActivity : AppCompatActivity() {
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
@@ -18,14 +19,12 @@ class BloodThreeOnOneActivity : AppCompatActivity() {
     private val mTvValue by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value) }
     private val mBtnOpenBle by lazy(LazyThreadSafetyMode.NONE) { findViewById<Button>(R.id.btn_open_ble) }
 
-    //初始化 blehelper
-    private val mBleHelper = BleHelper.getThreeOnOneInstance(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blood_three_on_one)
 
-        mBleHelper.setDataCallBack(
+        BleHelper.instance.setDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -73,14 +72,14 @@ class BloodThreeOnOneActivity : AppCompatActivity() {
         )
 
         mBtnOpenBle.setOnClickListener {
-            mBleHelper.doReSearch()
+            BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.THREEONONE)
         }
 
     }
 
     override fun onDestroy() {
         //释放资源
-        mBleHelper.destroy()
+        BleHelper.instance.destroy()
         super.onDestroy()
     }
 }

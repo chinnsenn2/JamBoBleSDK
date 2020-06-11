@@ -98,7 +98,10 @@ class QnHelper private constructor(context: Context) {
             QNBleApi.getInstance(ctx).also {
                 it.buildDevice(device, rssi, scanRecord) { _, _ -> }
                     .also { qd ->
-                        mQNUser?.let { qnUser -> it.connectDevice(qd, qnUser) { _, _ -> } }
+                        mQNUser?.let { qnUser ->
+                            it.connectDevice(qd, qnUser)
+                            { _, _ -> }
+                        }
                             ?: also { qnHelper ->
                                 qnHelper.mBleHelper?.scanLeDevice(true)
                             }

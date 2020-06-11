@@ -28,7 +28,6 @@ class FetalHeartActivity : AppCompatActivity() {
          * 而是在 IBleStatusCallback#onBTDeviceFound 返回合适的设备 BluetoothDevice ，也可以通过 getBluetoothDevice 获取
          */
         mBtnOpenBle.setOnClickListener {
-            FetalHeartBleHelper.instance.openBluetooth(this)
         }
 
         mBtnConnectBle.setOnClickListener {
