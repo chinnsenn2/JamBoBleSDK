@@ -1,4 +1,4 @@
-package com.jianbao.jamboble;
+package com.jianbao.jamboble.fetalheart;
 
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;

@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-//    implementation fileTree(dir: 'libs', include: ['*.aar'])
 
     implementation rootProject.ext.dependencies.appcompatx
     implementation rootProject.ext.dependencies.core_ktx
@@ -45,6 +44,6 @@ dependencies {
     implementation rootProject.ext.dependencies.localbroadcastmanagerx
     implementation rootProject.ext.dependencies.rxjava2
     implementation rootProject.ext.dependencies.rxandroid2
-    implementation files('libs/library_jamboble.aar')
+    implementation project(path: ':library_jamboble')
     annotationProcessor rootProject.ext.dependencies.annotationx
 }

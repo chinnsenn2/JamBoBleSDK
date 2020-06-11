@@ -111,15 +111,6 @@ class OxiMeterActivity : AppCompatActivity() {
                         }
                     }
                 }
-
-                override fun doByThirdSdk(
-                    device: BluetoothDevice?,
-                    btDevice: BTDevice?,
-                    rssi: Int,
-                    scanRecord: ByteArray?
-                ) {
-                }
-
             }
         )
 
@@ -192,6 +183,7 @@ class OxiMeterActivity : AppCompatActivity() {
                         act.mBleHelper.onBTStateChanged(BleState.TIMEOUT)
                     }
                     else -> {
+
                     }
                 }
 

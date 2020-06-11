@@ -23,7 +23,7 @@ class QnHelper private constructor(context: Context) {
     private var mBleHelper: BleHelper? = null
     private var mBtDevice: BTDevice? = null
     private var mQNUser: QNUser? = null
-    private var mContext: Context? = context
+    private var mWeakReference: WeakReference<Context> = WeakReference(context)
 
     companion object {
         private var instance: QnHelper? = null
@@ -67,9 +67,11 @@ class QnHelper private constructor(context: Context) {
     }
 
     init {
-        QNBleApi.getInstance(mContext).also {
-            it.setBleConnectionChangeListener(mQNBleConnectionChangeListener)
-            it.setDataListener(mQNDataListener)
+        mWeakReference.get()?.also {
+            QNBleApi.getInstance(it).also {
+                it.setBleConnectionChangeListener(mQNBleConnectionChangeListener)
+                it.setDataListener(mQNDataListener)
+            }
         }
     }
 
@@ -83,33 +85,39 @@ class QnHelper private constructor(context: Context) {
     ) {
         this.mBleHelper = bleHelper
         this.mBtDevice = btDevice
-        QNBleApi.getInstance(mContext).also {
-            mQNUser = it.buildUser(
-                qNUser.user_id,
-                qNUser.height,
-                qNUser.gender,
-                qNUser.birthday
-            ) { _, _ -> }
+
+        mWeakReference.get()?.also { ctx ->
+            QNBleApi.getInstance(ctx).also {
+                mQNUser = it.buildUser(
+                    qNUser.user_id,
+                    qNUser.height,
+                    qNUser.gender,
+                    qNUser.birthday
+                ) { _, _ -> }
+            }
+            QNBleApi.getInstance(ctx).also {
+                it.buildDevice(device, rssi, scanRecord) { _, _ -> }
+                    .also { qd ->
+                        mQNUser?.let { qnUser -> it.connectDevice(qd, qnUser) { _, _ -> } }
+                            ?: also { qnHelper ->
+                                qnHelper.mBleHelper?.scanLeDevice(true)
+                            }
+                    }
+            }
         }
-        QNBleApi.getInstance(mContext).also {
-            it.buildDevice(device, rssi, scanRecord) { _, _ -> }
-                .also { qd ->
-                    mQNUser?.let { qnUser -> it.connectDevice(qd, qnUser) { _, _ -> } }
-                        ?: also { qnHelper ->
-                            qnHelper.mBleHelper?.scanLeDevice(true)
-                        }
-                }
-        }
+
     }
 
     fun updateQNUser(qNUser: QnUser) {
-        QNBleApi.getInstance(mContext).also {
-            mQNUser = it.buildUser(
-                qNUser.user_id,
-                qNUser.height,
-                qNUser.gender,
-                qNUser.birthday
-            ) { _, _ -> }
+        mWeakReference.get()?.also { ctx ->
+            QNBleApi.getInstance(ctx).also {
+                mQNUser = it.buildUser(
+                    qNUser.user_id,
+                    qNUser.height,
+                    qNUser.gender,
+                    qNUser.birthday
+                ) { _, _ -> }
+            }
         }
     }
 
@@ -250,5 +258,6 @@ class QnHelper private constructor(context: Context) {
         mBleHelper = null
         mBtDevice = null
         mQNUser = null
+        mWeakReference.clear()
     }
 }

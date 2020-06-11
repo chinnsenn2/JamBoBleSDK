@@ -11,10 +11,4 @@ import com.jianbao.jamboble.device.BTDevice
 interface IBleStatusCallback {
     fun onBTDeviceFound(device: BluetoothDevice?)
     fun onNotification()
-    fun doByThirdSdk(
-        device: BluetoothDevice?,
-        btDevice: BTDevice?,
-        rssi: Int,
-        scanRecord: ByteArray?
-    )
 }

@@ -6,16 +6,16 @@ import com.jianbao.jamboble.data.BloodPressureData;
  * Created by 毛晓飞 on 2016/12/12.
  */
 
-public class FetalHeartDevice extends BTDevice {
+public class FetalHeartiFMDevice extends BTDevice {
 
     /**
-     *
+     *iFM10B2015060784
      */
     private static final long serialVersionUID = 1L;
 
-    public FetalHeartDevice() {
+    public FetalHeartiFMDevice() {
         super("胎心仪",
-                "iFM10B2015060784",
+                "iFM",
                 "0000fff0-0000-1000-8000-00805f9b34fb",
                 "0000fff1-0000-1000-8000-00805f9b34fb");
     }

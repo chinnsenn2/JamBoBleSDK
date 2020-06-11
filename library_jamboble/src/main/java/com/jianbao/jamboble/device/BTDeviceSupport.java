@@ -38,7 +38,8 @@ public class BTDeviceSupport {
         WRIST_BANDS,
         OXIMETER,
         SLEEPLIGHT,
-        THREEONONE
+        THREEONONE,
+        FETAL_HEART
     }
 
     private static HashMap<String, BTDevice> mBloodPressureDevice
@@ -60,6 +61,9 @@ public class BTDeviceSupport {
             = new HashMap<>();
 
     private static HashMap<String, BTDevice> mThreeOnOneDevice
+            = new HashMap<>();
+
+    private static HashMap<String, BTDevice> mFetalHeartDevice
             = new HashMap<>();
 
 
@@ -215,6 +219,14 @@ public class BTDeviceSupport {
         device.setBTDeviceID(6);
         device.deviceName = OximeterDevice.OximeterName.POD2.getName();
         mOximeterDevice.put(device.deviceName, device);
+
+        device = new FetalHeartiFMDevice();
+        device.setBTDeviceID(2);
+        mFetalHeartDevice.put(device.deviceName, device);
+
+        device = new FetalHeartLciFMDevice();
+        device.setBTDeviceID(3);
+        mFetalHeartDevice.put(device.deviceName, device);
     }
 
     /**
@@ -284,7 +296,16 @@ public class BTDeviceSupport {
             }
             Set<Map.Entry<String, BTDevice>> entryseSet = mThreeOnOneDevice.entrySet();
             for (Map.Entry<String, BTDevice> entry : entryseSet) {
-                if (!TextUtils.isEmpty(device.getName()) && device.getName().contains(entry.getKey())) {
+                if (device.getName().contains(entry.getKey())) {
+                    return mThreeOnOneDevice.get(entry.getKey());
+                }
+            }
+        }
+
+        if (deviceType == DeviceType.FETAL_HEART) {
+            Set<Map.Entry<String, BTDevice>> entryseSet = mFetalHeartDevice.entrySet();
+            for (Map.Entry<String, BTDevice> entry : entryseSet) {
+                if (!TextUtils.isEmpty(device.getName()) && device.getName().startsWith(entry.getKey())) {
                     return mThreeOnOneDevice.get(entry.getKey());
                 }
             }
@@ -306,6 +327,10 @@ public class BTDeviceSupport {
                     || btDevice instanceof YolandaFatScale10C1;
         }
         return false;
+    }
+
+    public static boolean isFetalHeart(BTDevice btDevice) {
+        return btDevice instanceof FetalHeartiFMDevice || btDevice instanceof FetalHeartLciFMDevice;
     }
 
     public static boolean isMiaoSdk(BTDevice btDevice) {

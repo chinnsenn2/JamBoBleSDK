@@ -69,6 +69,7 @@ class WeightActivity : AppCompatActivity() {
                 }
 
                 override fun onBTDataReceived(data: BTData?) {
+                    println("WeightActivity.onBTDataReceived ... ${Thread.currentThread().name}")
                     if (data is FatScaleData) {
                         mTvValue.text = data.toString()
                     }
