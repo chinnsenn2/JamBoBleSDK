@@ -33,6 +33,7 @@ android {
 }
 
 dependencies {
+
     implementation rootProject.ext.dependencies.appcompatx
     implementation rootProject.ext.dependencies.core_ktx
     implementation rootProject.ext.dependencies.logger
@@ -40,15 +41,9 @@ dependencies {
     implementation rootProject.ext.dependencies.gson
     implementation rootProject.ext.dependencies.kotlin
     implementation rootProject.ext.dependencies.constraintlayout
-    annotationProcessor rootProject.ext.dependencies.annotationx
-
-    implementation files('libs/library_jamboble.aar')
-    //由于本地依赖 aar 包无法传递 aar 中的远程依赖，需要在你的主工程依赖以下库
-    //如运行期间还发现 ClassNotFound 异常，请根据日志添加相应依赖
-    //=================================================================
     implementation rootProject.ext.dependencies.localbroadcastmanagerx
     implementation rootProject.ext.dependencies.rxjava2
     implementation rootProject.ext.dependencies.rxandroid2
-    //==================================================================
-
+    implementation project(path: ':library_jamboble')
+    annotationProcessor rootProject.ext.dependencies.annotationx
 }

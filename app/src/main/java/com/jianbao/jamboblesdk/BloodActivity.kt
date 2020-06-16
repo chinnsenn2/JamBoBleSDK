@@ -4,21 +4,13 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.jianbao.jamboble.BleHelper
+import com.jianbao.fastble.JamBoBleHelper
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.BloodPressureData
 
 class BloodActivity : AppCompatActivity() {
-    //初始化 血压 blehelper
-    private val mBleHelper by lazy(LazyThreadSafetyMode.NONE) {
-        BleHelper.getBloodPressureInstance(this)
-       /* //初始化 血糖 blehelper
-         BleHelper.getBloodSugarInstance(this)
-        //初始化 尿酸 blehelper
-         BleHelper.getUricAcidInstance(this)*/
-    }
 
     private val mTvValue by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value) }
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
@@ -28,7 +20,7 @@ class BloodActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blood)
         title = "血压测量"
-        mBleHelper.setDataCallBack(
+        JamBoBleHelper.instance.setBleDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -38,6 +30,7 @@ class BloodActivity : AppCompatActivity() {
                         }
                         //正在扫描
                         BleState.SCAN_START -> {
+                            mBtnOpenBle.text = "停止扫描"
                             mTvStatus.text = "开始扫描..."
                         }
                         //连接成功
@@ -46,7 +39,17 @@ class BloodActivity : AppCompatActivity() {
                         }
                         //长时间未搜索到设备
                         BleState.TIMEOUT -> {
+                            mBtnOpenBle.text = "开始扫描"
                             mTvStatus.text = "超时"
+                        }
+                        BleState.CONNECT_FAILED -> {
+                            mTvStatus.text = "连接失败"
+                        }
+                        BleState.CONNECTEING -> {
+                            mTvStatus.text = "连接设备中"
+                        }
+                        BleState.DISCONNECT -> {
+                            mTvStatus.text = "断开连接"
                         }
                     }
                 }
@@ -83,13 +86,13 @@ class BloodActivity : AppCompatActivity() {
         )
 
         mBtnOpenBle.setOnClickListener {
-            mBleHelper.doReSearch()
+            JamBoBleHelper.instance.scanBloodPressureDevice()
         }
     }
 
     override fun onDestroy() {
         //释放资源
-        mBleHelper.destroy()
+        JamBoBleHelper.instance.destroy()
         super.onDestroy()
     }
 }

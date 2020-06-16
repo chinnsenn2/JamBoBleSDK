@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.jianbao.jamboble.BleHelper
+import com.jianbao.fastble.JamBoBleHelper
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
@@ -13,10 +13,7 @@ import com.jianbao.jamboble.data.FatScaleData
 import com.jianbao.jamboble.data.QnUser
 import java.util.*
 
-class WeightActivity : AppCompatActivity() {
-    //初始化 blehelper
-    private val mBleHelper by lazy(LazyThreadSafetyMode.NONE) { BleHelper.getWeightInstance(this) }
-
+class Weight2Activity : AppCompatActivity() {
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
     private val mTvValue by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value) }
     private val mBtnOpenBle by lazy(LazyThreadSafetyMode.NONE) { findViewById<Button>(R.id.btn_open_ble) }
@@ -28,47 +25,45 @@ class WeightActivity : AppCompatActivity() {
 
         title = "体重测量"
 
-        mBtnOpenBle.setOnClickListener {
-            mBleHelper.doReSearch()
-        }
 
-        //体重测量必须设置
-        mBleHelper.updateQnUser(QnUser("1", "male", 180, Date()))
-
-        //体重实时数据回调（仅支持体重测量
-        mBleHelper.setUnSteadyValueCallBack(
+        JamBoBleHelper.instance.updateQnUser(QnUser("1", "male", 180, Date()))
+        JamBoBleHelper.instance.setUnSteadyValueCallBack(
             object : UnSteadyValueCallBack {
                 override fun onUnsteadyValue(value: Float) {
-                    mTvValueRealtime.setText("$value kg")
+                    mTvValueRealtime.text = "$value kg"
                 }
             }
         )
 
-        //通用数据回调
-        mBleHelper.setDataCallBack(
+        JamBoBleHelper.instance.setBleDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
-                    when (state) {
-                        //未开启蓝牙
-                        BleState.NOT_FOUND -> {
-                            mTvStatus.text = "请打开蓝牙"
-                        }
-                        //正在扫描
-                        BleState.SCAN_START -> {
-                            mTvStatus.text = "开始扫描..."
-                        }
-                        //连接成功
-                        BleState.CONNECTED -> {
-                            mTvStatus.text = "连接设备成功"
-                        }
-                        //长时间未搜索到设备
-                        BleState.TIMEOUT -> {
-                            mTvStatus.text = "超时"
+                    runOnUiThread {
+                        when (state) {
+                            //未开启蓝牙
+                            BleState.NOT_FOUND -> {
+                                mTvStatus.text = "请打开蓝牙"
+                            }
+                            //正在扫描
+                            BleState.SCAN_START -> {
+                                mBtnOpenBle.text = "停止扫描"
+                                mTvStatus.text = "开始扫描..."
+                            }
+                            //连接成功
+                            BleState.CONNECTED -> {
+                                mTvStatus.text = "连接设备成功"
+                            }
+                            //长时间未搜索到设备
+                            BleState.TIMEOUT -> {
+                                mBtnOpenBle.text = "开始扫描"
+                                mTvStatus.text = "超时"
+                            }
                         }
                     }
                 }
 
                 override fun onBTDataReceived(data: BTData?) {
+                    println("WeightActivity.onBTDataReceived ... ${Thread.currentThread().name}")
                     if (data is FatScaleData) {
                         mTvValue.text = data.toString()
                     }
@@ -107,12 +102,20 @@ class WeightActivity : AppCompatActivity() {
                     //蓝牙授权失败
                 }
 
-            })
-    }
+            }
+        )
 
-    override fun onDestroy() {
-        //释放资源
-        mBleHelper.destroy()
-        super.onDestroy()
+        mBtnOpenBle.apply {
+            setOnClickListener {
+                when (text) {
+                    "开始扫描" -> {
+                        JamBoBleHelper.instance.scanFatScaleDevice()
+                    }
+                    "停止扫描" -> {
+                        JamBoBleHelper.instance.stopScan()
+                    }
+                }
+            }
+        }
     }
 }
