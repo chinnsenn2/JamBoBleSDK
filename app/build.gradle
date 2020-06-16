@@ -44,6 +44,7 @@ dependencies {
     implementation rootProject.ext.dependencies.localbroadcastmanagerx
     implementation rootProject.ext.dependencies.rxjava2
     implementation rootProject.ext.dependencies.rxandroid2
-    implementation project(path: ':library_jamboble')
+    implementation files('libs/library_jamboble.aar')
+    implementation files('libs/library_jamboble.aar')
     annotationProcessor rootProject.ext.dependencies.annotationx
 }
