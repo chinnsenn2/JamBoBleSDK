@@ -21,6 +21,7 @@ import com.jianbao.jamboble.data.QnUser
 import com.jianbao.jamboble.data.UricAcidData
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.device.BTDeviceSupport
+import com.jianbao.jamboble.device.oximeter.OxiMeterHelper
 import com.jianbao.jamboble.device.oximeter.OximeterDevice
 import com.jianbao.jamboble.fatscale.JamboQnHelper
 import com.jianbao.jamboble.utils.LogUtils
@@ -170,25 +171,26 @@ class JamBoBleHelper {
      */
     fun scanBloodPressureDevice() {
         BleManager.getInstance().initScanRule(bloodPressureBleScanRuleConfig)
-        mJamboBleScanCallback.setType(BTDeviceSupport.DeviceType.BLOOD_PRESSURE)
-        BleManager.getInstance().scan(mJamboBleScanCallback)
+        scan(BTDeviceSupport.DeviceType.FAT_SCALE)
     }
 
     fun scanBloodSugarDevice() {
         BleManager.getInstance().initScanRule(bloodSugarBleScanRuleConfig)
-        mJamboBleScanCallback.setType(BTDeviceSupport.DeviceType.BLOOD_SUGAR)
-        BleManager.getInstance().scan(mJamboBleScanCallback)
+        scan(BTDeviceSupport.DeviceType.BLOOD_SUGAR)
     }
 
-    fun setUricAcidDevice() {
+    fun scanUricAcidDevice() {
         BleManager.getInstance().initScanRule(uricAcidBleScanRuleConfig)
-        mJamboBleScanCallback.setType(BTDeviceSupport.DeviceType.URIC_ACID)
-        BleManager.getInstance().scan(mJamboBleScanCallback)
+        scan(BTDeviceSupport.DeviceType.URIC_ACID)
     }
 
-    fun setOxiMeterDevice() {
+    fun scanOxiMeterDevice() {
         BleManager.getInstance().initScanRule(oxiMeterBleScanRuleConfig)
-        mJamboBleScanCallback.setType(BTDeviceSupport.DeviceType.URIC_ACID)
+        scan(BTDeviceSupport.DeviceType.OXIMETER)
+    }
+
+    fun scan(type: BTDeviceSupport.DeviceType) {
+        mJamboBleScanCallback.setType(type)
         BleManager.getInstance().scan(mJamboBleScanCallback)
     }
 
@@ -258,7 +260,6 @@ class JamBoBleHelper {
     fun onUnsteadyValue(value: Float) {
         mUnSteadyValueCallBack?.onUnsteadyValue(value)
     }
-
 
     class JamboBleScanCallback(
         helper: JamBoBleHelper,
@@ -373,20 +374,10 @@ class JamBoBleHelper {
 
                         override fun onNotifySuccess() {
                             if (it is OximeterDevice) {
-                                BleManager.getInstance().notify(bleDevice,it.serviceUUID,it.serviceUUID,
-                                object : BleNotifyCallback(){
-                                    override fun onCharacteristicChanged(data: ByteArray?) {
-
-                                    }
-
-                                    override fun onNotifyFailure(exception: BleException?) {
-
-                                    }
-
-                                    override fun onNotifySuccess() {
-                                    }
-
-                                })
+                                //初始化inputStream和outputStream
+                                val mOxiMeterHelper = OxiMeterHelper(bleDevice, it)
+                                it.oximeterHelper = mOxiMeterHelper
+                                mWeakReference.get()?.onNotification()
                             }
                         }
 

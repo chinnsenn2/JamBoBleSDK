@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.creative.FingerOximeter.FingerOximeter
+import com.jianbao.fastble.JamBoBleHelper
 import com.jianbao.jamboble.BaseBleHelper.Companion.MESSAGE_TIMEOUT
 import com.jianbao.jamboble.BleHelper
 import com.jianbao.jamboble.BleState
@@ -16,7 +17,6 @@ import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.data.OximeterData
 import com.jianbao.jamboble.data.SpO2Data
-import com.jianbao.jamboble.device.BTDeviceSupport
 import com.jianbao.jamboble.device.oximeter.FingerOximeterCallback
 import com.jianbao.jamboble.device.oximeter.OximeterDevice
 import com.jianbao.jamboble.device.oximeter.OximeterReader
@@ -40,10 +40,10 @@ class OxiMeterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_oxi_meter)
 
         mBtnOpenBle.setOnClickListener {
-            BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.OXIMETER)
+            JamBoBleHelper.instance.scanOxiMeterDevice()
         }
         //通用数据回调
-        BleHelper.instance.addBleDataCallback(
+        JamBoBleHelper.instance.setDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -83,7 +83,7 @@ class OxiMeterActivity : AppCompatActivity() {
 
             })
 
-        BleHelper.instance.addBleStatusCallback(
+        JamBoBleHelper.instance.setBleStatusCallback(
             object : IBleStatusCallback {
                 override fun onBTDeviceFound(device: BluetoothDevice?) {
                 }
@@ -173,10 +173,10 @@ class OxiMeterActivity : AppCompatActivity() {
                         }
 
                         //需要等待自动关闭
-                        BleHelper.instance.onBTStateChanged(BleState.SCAN_START)
+                        JamBoBleHelper.instance.onBTStateChanged(BleState.SCAN_START)
                     }
                     MESSAGE_TIMEOUT -> {
-                        BleHelper.instance.onBTStateChanged(BleState.TIMEOUT)
+                        JamBoBleHelper.instance.onBTStateChanged(BleState.TIMEOUT)
                     }
                     else -> {
 
