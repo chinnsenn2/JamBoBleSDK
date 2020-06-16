@@ -41,11 +41,12 @@ import com.jianbao.jamboble.device.BTDevice;
 import com.jianbao.jamboble.device.CavyBandDevice;
 import com.jianbao.jamboble.device.OnCallBloodSugar;
 import com.jianbao.jamboble.device.SannuoAnWenBloodSugar;
-import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 import com.jianbao.jamboble.device.oximeter.OxiMeterHelper;
+import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 import com.jianbao.jamboble.utils.LogUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -83,7 +84,8 @@ public class BTControlManager {
     private List<BluetoothGattCharacteristic> mNotifyCharacteristics;
     private BluetoothGattCharacteristic mWriteCharacteristic;
 
-    private final Context mContext;
+    //    private final Context mContext;
+    private final WeakReference<Context> mWeakContext;
     private final ExecutorService mExecutorService;
     private BTControlListener mBTControlListener;
     private boolean mHasInit = false;
@@ -91,7 +93,7 @@ public class BTControlManager {
 
 
     // Code to manage Service lifecycle.
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName componentName,
@@ -111,11 +113,13 @@ public class BTControlManager {
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBluetoothLeService = null;
+            dispose();
         }
     };
 
     public BTControlManager(Context context) {
-        mContext = context;
+        mWeakContext = new WeakReference<>(context);
+//        mContext = context;
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
@@ -130,7 +134,11 @@ public class BTControlManager {
     }
 
     public BTControlManager init() {
-        if (!mContext.getPackageManager().hasSystemFeature(
+        if (mWeakContext.get() == null) {
+            mHasInit = false;
+            return this;
+        }
+        if (!mWeakContext.get().getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_BLUETOOTH_LE)) {
             mHasInit = false;
             return this;
@@ -143,12 +151,17 @@ public class BTControlManager {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothLeService.ACTION_CHARACTER_NOTIFICATION);
-        mContext.registerReceiver(mGattUpdateReceiver, intentFilter);
+        mWeakContext.get().registerReceiver(mGattUpdateReceiver, intentFilter);
 
-        // 绑定服务
-        Intent gattServiceIntent = new Intent(mContext, BluetoothLeService.class);
-        mContext.bindService(gattServiceIntent, mServiceConnection, Activity.BIND_AUTO_CREATE);
+        try {
+            // 绑定服务
+            Intent gattServiceIntent = new Intent(mWeakContext.get(), BluetoothLeService.class);
+            mWeakContext.get().bindService(gattServiceIntent, mServiceConnection, Activity.BIND_AUTO_CREATE);
 
+        } catch (Exception e
+        ) {
+            System.out.println(e.getMessage());
+        }
         mHasInit = true;
         mNotifyCharacteristics = new ArrayList<>();
         return this;
@@ -159,9 +172,12 @@ public class BTControlManager {
             return;
         }
 
+        if (mWeakContext.get() == null) {
+            return;
+        }
         // 注销广播监听
         if (mGattUpdateReceiver != null) {
-            mContext.unregisterReceiver(mGattUpdateReceiver);
+            mWeakContext.get().unregisterReceiver(mGattUpdateReceiver);
             mGattUpdateReceiver = null;
         }
 
@@ -174,25 +190,16 @@ public class BTControlManager {
             mNotifyCharacteristics = null;
         }
 
-//		if (mYuwellCharacteristic != null && mBluetoothLeService != null){
-//			mBluetoothLeService.setCharacteristicNotification(
-//					mYuwellCharacteristic, false, null);
-//			mYuwellCharacteristic = null;
-//		}
-
         // 然后关闭蓝牙连接
         disconnect();
 
+        mWeakContext.get().unbindService(mServiceConnection);
+        mServiceConnection = null;
         // 解绑服务
-        if (mServiceConnection != null) {
-            mContext.unbindService(mServiceConnection);
-        }
-
-
         if (mExecutorService != null) {
             mExecutorService.shutdown();
         }
-
+        mWeakContext.clear();
     }
 
     /**
@@ -271,8 +278,7 @@ public class BTControlManager {
                 continue;
             }
 
-            List<BluetoothGattCharacteristic> gattCharacteristics = gattService
-                    .getCharacteristics();
+            List<BluetoothGattCharacteristic> gattCharacteristics = gattService.getCharacteristics();
             // Loops through available Characteristics.
             for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
                 uuid = gattCharacteristic.getUuid().toString();
@@ -289,20 +295,6 @@ public class BTControlManager {
                         break;
                     }
                 }
-
-                //监测鱼跃血压计测量过程
-//				if (uuid.equalsIgnoreCase("00002a36-0000-1000-8000-00805f9b34fb")) {
-//					if (mSelectBTDevice instanceof YuwellBloodPressure){
-//						try {
-//							Thread.sleep(1000);
-//						} catch (InterruptedException e) {
-//							e.printStackTrace();
-//						}
-//						mYuwellCharacteristic = gattCharacteristic;
-//						mBluetoothLeService.setCharacteristicNotification(gattCharacteristic,
-//								true, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-//					}
-//				}
             }
 
             //针对有些手机不需要写命令
@@ -383,28 +375,25 @@ public class BTControlManager {
 
 
                 if (mSelectBTDevice.notifyCharacterUUID.equalsIgnoreCase(uuid)) {
-                    if (mSelectBTDevice instanceof OximeterDevice) {
-                        //启用写特征
-                        //不需要发送命令，配置写特征即可
-                        mBluetoothLeService.setCharacteristicNotification(
-                                mWriteCharacteristic,
-                                true,
-                                mSelectBTDevice.getDescriptorEnabledValue());
-                        //调用
-                        if (TextUtils.equals(mSelectBTDevice.deviceName, OximeterDevice.OximeterName.PC_60F.getName())) {
-                            if (mBTControlListener != null) {
-                                //初始化inputStream和outputStream
-                                OxiMeterHelper mOxiMeterHelper = new OxiMeterHelper(
-                                        mBluetoothLeService,
-                                        mSelectBTDevice.serviceUUID,
-                                        mSelectBTDevice.writeCharacterUUID);
-                                ((OximeterDevice) mSelectBTDevice).setOximeterHelper(mOxiMeterHelper);
+                    //启用写特征
+                    //不需要发送命令，配置写特征即可
+                    mBluetoothLeService.setCharacteristicNotification(
+                            mWriteCharacteristic,
+                            true,
+                            mSelectBTDevice.getDescriptorEnabledValue());
+                    //调用
+                    if (TextUtils.equals(mSelectBTDevice.deviceName, OximeterDevice.OximeterName.PC_60F.getName())) {
+                        if (mBTControlListener != null) {
+                            //初始化inputStream和outputStream
+                            OxiMeterHelper mOxiMeterHelper = new OxiMeterHelper(
+                                    mBluetoothLeService,
+                                    mSelectBTDevice.serviceUUID,
+                                    mSelectBTDevice.writeCharacterUUID);
+                            ((OximeterDevice) mSelectBTDevice).setOximeterHelper(mOxiMeterHelper);
 
-                                //回调开始检测
-                                mBTControlListener.onActionNotification();
-                            }
+                            //回调开始检测
+                            mBTControlListener.onActionNotification();
                         }
-
                     }
                     return;
                 }
@@ -430,7 +419,7 @@ public class BTControlManager {
                     return;
                 }
                 if (mSelectBTDevice.notifyCharacterUUID.equalsIgnoreCase(uuid)) {
-                    if (mSelectBTDevice != null && mSelectBTDevice instanceof SannuoAnWenBloodSugar) {
+                    if (mSelectBTDevice instanceof SannuoAnWenBloodSugar) {
                         //启用写特征
                         //不需要发送命令，配置写特征即可
                         mBluetoothLeService.setCharacteristicNotification(
@@ -456,40 +445,44 @@ public class BTControlManager {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mBTControlListener.onConnectChanged(true);
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED
-                    .equals(action)) {
-                if (mBTControlListener != null) {
-                    mBTControlListener.onConnectChanged(false);
-                }
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED
-                    .equals(action)) {
-                // Show all the supported services and characteristics on the
-                // user interface.
-                if (mBluetoothLeService != null) {
-                    displayGattServices(mBluetoothLeService
-                            .getSupportedGattServices());
-                }
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                if (mSelectBTDevice != null) {
-                    byte[] data = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
-                    BTData btData = mSelectBTDevice.paserData(data);
-                    if (btData instanceof BTWriteData) {
-                        BTWriteData wData = (BTWriteData) btData;
-                        if (mBluetoothLeService != null && mWriteCharacteristic != null) {
-                            mWriteCharacteristic.setValue(wData.command);
-                            mBluetoothLeService.writeCharacteristic(mWriteCharacteristic);
-                        }
-                    } else {
-                        if (mBTControlListener != null) {
-                            mBTControlListener.onDataReceived(btData);
+            switch (action) {
+                case BluetoothLeService.ACTION_GATT_CONNECTED:
+                    mBTControlListener.onConnectChanged(true);
+                    break;
+                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
+                    if (mBTControlListener != null) {
+                        mBTControlListener.onConnectChanged(false);
+                    }
+                    break;
+                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
+                    // Show all the supported services and characteristics on the
+                    // user interface.
+                    if (mBluetoothLeService != null) {
+                        displayGattServices(mBluetoothLeService
+                                .getSupportedGattServices());
+                    }
+                    break;
+                case BluetoothLeService.ACTION_DATA_AVAILABLE:
+                    if (mSelectBTDevice != null) {
+                        byte[] data = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
+                        BTData btData = mSelectBTDevice.paserData(data);
+                        if (btData instanceof BTWriteData) {
+                            BTWriteData wData = (BTWriteData) btData;
+                            if (mBluetoothLeService != null && mWriteCharacteristic != null) {
+                                mWriteCharacteristic.setValue(wData.command);
+                                mBluetoothLeService.writeCharacteristic(mWriteCharacteristic);
+                            }
+                        } else {
+                            if (mBTControlListener != null) {
+                                mBTControlListener.onDataReceived(btData);
+                            }
                         }
                     }
-                }
-            } else if (BluetoothLeService.ACTION_CHARACTER_NOTIFICATION.equals(action)) {
-                String uuid = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                dealDescriptorWrite(uuid);
+                    break;
+                case BluetoothLeService.ACTION_CHARACTER_NOTIFICATION:
+                    String uuid = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+                    dealDescriptorWrite(uuid);
+                    break;
             }
         }
     };

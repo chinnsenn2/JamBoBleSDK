@@ -22,6 +22,7 @@ class BleHelper private constructor() : BaseBleHelper() {
     private var mQnUser: QnUser? = null
     private var mUnSteadyValueCallBack: UnSteadyValueCallBack? = null
     private var mDeviceType = BTDeviceSupport.DeviceType.FAT_SCALE
+    private var mIsAutoConnect = true
 
     private object Singleton {
         val instance = BleHelper()
@@ -55,8 +56,21 @@ class BleHelper private constructor() : BaseBleHelper() {
         }
     }
 
+    /**
+     * 搜索设备不自动链接
+     */
     fun doSearch(activity: FragmentActivity?, deviceType: BTDeviceSupport.DeviceType) {
         this.mDeviceType = deviceType
+        this.mIsAutoConnect = false
+        doSearch(activity)
+    }
+
+    /**
+     * 搜索设备自动连接
+     */
+    fun doSearchAutoConnect(activity: FragmentActivity?, deviceType: BTDeviceSupport.DeviceType) {
+        this.mDeviceType = deviceType
+        this.mIsAutoConnect = true
         doSearch(activity)
     }
 
@@ -75,33 +89,36 @@ class BleHelper private constructor() : BaseBleHelper() {
 
     override fun checkDevice(device: BluetoothDevice?, rssi: Int, scanRecord: ByteArray) {
         device?.also { blDevice ->
+            println("blDevice = [${blDevice.name}]")
             val btDevice = BTDeviceSupport.checkSupport(blDevice, mDeviceType)
             btDevice?.also { bd ->
                 println("device.getAddress() = " + blDevice.address)
                 onBTDeviceFound(blDevice)
                 scanLeDevice(false)
-                Log.i(TAG, "已找到设备，准备连接...")
-                when {
-                    BTDeviceSupport.isYolandaFatScale(bd) -> {
-                        mBTControlManager?.connectDevice = bd
-                        mRegisterActReference?.get()?.also {
-                            it.runOnUiThread{
-                                QnHelper.getInstance(it).also { helper ->
-                                    helper.connectDevice(
-                                        this,
-                                        mQnUser!!,
-                                        blDevice,
-                                        bd,
-                                        rssi,
-                                        scanRecord
-                                    )
+                if (mIsAutoConnect) {
+                    Log.i(TAG, "已找到设备，准备连接...")
+                    when {
+                        BTDeviceSupport.isYolandaFatScale(bd) -> {
+                            mBTControlManager?.connectDevice = bd
+                            mRegisterActReference?.get()?.also {
+                                it.runOnUiThread {
+                                    QnHelper.getInstance(it).also { helper ->
+                                        helper.connectDevice(
+                                            this,
+                                            mQnUser!!,
+                                            blDevice,
+                                            bd,
+                                            rssi,
+                                            scanRecord
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                    }
-                    else -> {
-                        mBTControlManager?.connect(bd, blDevice.address)
+                        }
+                        else -> {
+                            mBTControlManager?.connect(bd, blDevice.address)
+                        }
                     }
                 }
             }
@@ -113,36 +130,52 @@ class BleHelper private constructor() : BaseBleHelper() {
      * @param state BleState
      */
     override fun onBTStateChanged(state: BleState) {
-        mDataCallback?.onBTStateChanged(state)
+        mDataCallbackList.forEach {
+            it.onBTStateChanged(state)
+        }
     }
 
     override fun onLocalBTEnabled(enabled: Boolean) {
-        mDataCallback?.onLocalBTEnabled(enabled)
+        mDataCallbackList.forEach {
+            it.onLocalBTEnabled(enabled)
+        }
+    }
+
+    override fun onBTDeviceFound(device: BluetoothDevice?) {
+        mBleStatusCallbackList.forEach {
+            it.onBTDeviceFound(device)
+        }
+    }
+
+    override fun onNotification() {
+        mBleStatusCallbackList.forEach {
+            it.onNotification()
+        }
     }
 
     private var mLastDataFlag = ""
 
     override fun onBTDataReceived(btData: BTData?) {
         btData?.also {
-            when (it) {
+            val lastTime: String? = when (it) {
                 is UricAcidData -> {
-                    val lastTime: String =
-                        it.mYear.toString() + it.mMonth.toString() + it.mday.toString() + it.mHour.toString() + it.mMinute.toString() + it.mUricAcid.toString()
-                    if (lastTime != mLastDataFlag) {
-                        mDataCallback?.onBTDataReceived(it)
-                        mLastDataFlag = lastTime
-                    }
+                    it.mYear.toString() + it.mMonth.toString() + it.mday.toString() + it.mHour.toString() + it.mMinute.toString() + it.mUricAcid.toString()
                 }
                 is CholestenoneData -> {
-                    val lastTime: String =
-                        it.mYear.toString() + it.mMonth.toString() + it.mday.toString() + it.mHour.toString() + it.mMinute.toString() + it.cholestenone.toString()
-                    if (lastTime != mLastDataFlag) {
-                        mDataCallback?.onBTDataReceived(it)
-                        mLastDataFlag = lastTime
-                    }
+                    it.mYear.toString() + it.mMonth.toString() + it.mday.toString() + it.mHour.toString() + it.mMinute.toString() + it.cholestenone.toString()
                 }
-                else -> {
-                    mDataCallback?.onBTDataReceived(it)
+                else -> null
+            }
+            lastTime?.also { dataTime ->
+                if (dataTime != mLastDataFlag) {
+                    mDataCallbackList.forEach { callback ->
+                        callback.onBTDataReceived(it)
+                    }
+                    mLastDataFlag = dataTime
+                }
+            } ?: also { _ ->
+                mDataCallbackList.forEach { callback ->
+                    callback.onBTDataReceived(it)
                 }
             }
 
@@ -153,30 +186,11 @@ class BleHelper private constructor() : BaseBleHelper() {
         mUnSteadyValueCallBack?.onUnsteadyValue(value)
     }
 
-    override fun onBTDeviceFound(device: BluetoothDevice?) {
-        mBleStatusCallback?.onBTDeviceFound(device)
-    }
-
-    override fun onNotification() {
-        mBleStatusCallback?.onNotification()
-    }
-
     override fun destroy() {
         mRegisterActReference?.get()?.also {
             QnHelper.getInstance(it).dispose()
         }
         super.destroy()
-        //释放资源
-        if (mBTControlManager != null) {
-            mBTControlManager?.dispose()
-            mBTControlManager = null
-        }
-        if (mLeScanCallback != null) {
-            mLeScanCallback = null
-        }
-        if (mBleStatusCallback != null) {
-            mBleStatusCallback = null
-        }
     }
 
 

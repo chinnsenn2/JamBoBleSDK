@@ -42,28 +42,28 @@ public class BTDeviceSupport {
         FETAL_HEART
     }
 
-    private static HashMap<String, BTDevice> mBloodPressureDevice
+    public static HashMap<String, BTDevice> mBloodPressureDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mBloodSugarDevice
+    public static HashMap<String, BTDevice> mBloodSugarDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mFatScaleDevice
+    public static HashMap<String, BTDevice> mFatScaleDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mUricAcidDevice
+    public static HashMap<String, BTDevice> mUricAcidDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mWristBandDevice
+    public static HashMap<String, BTDevice> mWristBandDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mOximeterDevice
+    public static HashMap<String, BTDevice> mOximeterDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mThreeOnOneDevice
+    public static HashMap<String, BTDevice> mThreeOnOneDevice
             = new HashMap<>();
 
-    private static HashMap<String, BTDevice> mFetalHeartDevice
+    public static HashMap<String, BTDevice> mFetalHeartDevice
             = new HashMap<>();
 
 
@@ -322,9 +322,7 @@ public class BTDeviceSupport {
      */
     public static boolean isYolandaFatScale(BTDevice btDevice) {
         if (btDevice != null) {
-            return btDevice instanceof YolandaFatScale
-                    || btDevice instanceof YolandaFatScale20G2
-                    || btDevice instanceof YolandaFatScale10C1;
+            return btDevice instanceof YolandaFatScale;
         }
         return false;
     }

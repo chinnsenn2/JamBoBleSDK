@@ -35,7 +35,7 @@ class FetalHeartActivity : AppCompatActivity() {
         }
 
         //数据回调
-        FetalHeartBleHelper.instance.setDataCallBack(
+        FetalHeartBleHelper.instance.addBleDataCallback(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     println("FetalHeartActivity.onBTStateChanged")
@@ -53,7 +53,7 @@ class FetalHeartActivity : AppCompatActivity() {
         )
 
         //蓝牙设备状态回调
-        FetalHeartBleHelper.instance.setBleStatusCallback(
+        FetalHeartBleHelper.instance.addBleStatusCallback(
             object : IBleStatusCallback {
                 override fun onBTDeviceFound(device: BluetoothDevice?) {
                     println("device = [${device}]")

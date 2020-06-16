@@ -95,24 +95,38 @@ class FetalHeartBleHelper private constructor() : BaseBleHelper() {
         }
     }
 
+    /**
+     * 蓝牙回调
+     * @param state BleState
+     */
     override fun onBTStateChanged(state: BleState) {
-        mDataCallback?.onBTStateChanged(state)
+        mDataCallbackList.forEach {
+            it.onBTStateChanged(state)
+        }
     }
 
     override fun onLocalBTEnabled(enabled: Boolean) {
-        mDataCallback?.onLocalBTEnabled(enabled)
-    }
-
-    override fun onBTDataReceived(btData: BTData?) {
-        mDataCallback?.onBTDataReceived(btData)
+        mDataCallbackList.forEach {
+            it.onLocalBTEnabled(enabled)
+        }
     }
 
     override fun onBTDeviceFound(device: BluetoothDevice?) {
-        mBleStatusCallback?.onBTDeviceFound(device)
+        mBleStatusCallbackList.forEach {
+            it.onBTDeviceFound(device)
+        }
     }
 
     override fun onNotification() {
-        mBleStatusCallback?.onNotification()
+        mBleStatusCallbackList.forEach {
+            it.onNotification()
+        }
+    }
+
+    override fun onBTDataReceived(btData: BTData?) {
+        mDataCallbackList.forEach { callback ->
+            callback.onBTDataReceived(btData)
+        }
     }
 
     override fun destroy() {

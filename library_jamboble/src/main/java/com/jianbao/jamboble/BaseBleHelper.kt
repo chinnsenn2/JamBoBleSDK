@@ -13,7 +13,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
-import android.os.Looper
 import android.os.Message
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -24,6 +23,7 @@ import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.data.BTData
 import com.jianbao.jamboble.utils.permissions.PermissionsUtil
 import java.lang.ref.WeakReference
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -74,11 +74,11 @@ abstract class BaseBleHelper {
     var mNewScanCallback: ScanCallback? = null
     var mLeScanCallback: BluetoothAdapter.LeScanCallback? = null
 
-    var mBleStatusCallback: IBleStatusCallback? = null
-    var mDataCallback: BleDataCallback? = null
+    var mBleStatusCallbackList: MutableList<IBleStatusCallback> = mutableListOf()
+    var mDataCallbackList: MutableList<BleDataCallback> = mutableListOf()
 
     private var mRegistered = AtomicBoolean(false)
-    private var mExecutor = Executors.newCachedThreadPool()
+    private var mExecutor: ExecutorService? = null
     private val mBTControlListener by lazy {
         BTListener(this)
     }
@@ -108,15 +108,29 @@ abstract class BaseBleHelper {
     /**
      * 数据回调
      */
-    fun setDataCallBack(callback: BleDataCallback) {
-        this.mDataCallback = callback
+    fun addBleDataCallback(callback: BleDataCallback) {
+        this.mDataCallbackList.add(callback)
+    }
+
+    /**
+     * 移除回调
+     */
+    fun removeBleDataCallback(callback: BleDataCallback) {
+        this.mDataCallbackList.remove(callback)
     }
 
     /**
      * 蓝牙状态回调
      */
-    fun setBleStatusCallback(callback: IBleStatusCallback) {
-        this.mBleStatusCallback = callback
+    fun addBleStatusCallback(callback: IBleStatusCallback) {
+        this.mBleStatusCallbackList.add(callback)
+    }
+
+    /**
+     * 移除回调
+     */
+    fun removeBleStatusCallback(callback: IBleStatusCallback) {
+        this.mBleStatusCallbackList.remove(callback)
     }
 
     fun doSearch(activity: FragmentActivity?) {
@@ -157,7 +171,8 @@ abstract class BaseBleHelper {
         mRegisterActReference?.get()?.also {
             it.runOnUiThread {
                 if (it.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                    checkBle()
+                    initBluetooth()
+//                    checkBle()
                 } else {
                     showToast(it, "您的手机不支持蓝牙功能")
                 }
@@ -165,7 +180,7 @@ abstract class BaseBleHelper {
         }
     }
 
-    fun checkBle() {
+    private fun checkBle() {
         // 初始化 Bluetooth adapter,
         // 通过蓝牙管理器得到一个参考蓝牙适配器(API必须在以上android4.3或以上和版本)
         mRegisterActReference?.get()?.also { activity ->
@@ -245,6 +260,22 @@ abstract class BaseBleHelper {
             it.clear()
         }
 
+        try {
+            mExecutor?.shutdown()
+            mExecutor = null
+        } catch (e: Exception) {
+            println(e.message)
+        }
+
+        //释放资源
+        if (mBTControlManager != null) {
+            mBTControlManager?.dispose()
+            mBTControlManager = null
+        }
+        if (mLeScanCallback != null) {
+            mLeScanCallback = null
+        }
+
         scanLeDevice(false)
         mRegisterActReference = null
         mBluetoothAdapter = null
@@ -252,8 +283,8 @@ abstract class BaseBleHelper {
         mBluetoothStateReceiver = null
         mNewScanCallback = null
         mLeScanCallback = null
-        mBleStatusCallback = null
-        mDataCallback = null
+        mBleStatusCallbackList.clear()
+        mDataCallbackList.clear()
     }
 
     /**
@@ -262,6 +293,14 @@ abstract class BaseBleHelper {
      * @param enable
      */
     fun scanLeDevice(enable: Boolean) {
+        if (!enable) {
+            try {
+                mExecutor?.shutdown()
+                mExecutor = null
+            } catch (e: Exception) {
+                println(e.message)
+            }
+        }
         mHandler.removeMessages(MESSAGE_SCAN)
         removeMessageTimeout()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -276,10 +315,17 @@ abstract class BaseBleHelper {
         rssi: Int,
         scanRecord: ByteArray
     ) {
-        mScanRunnable.also {
-            it.setDevice(device, rssi, scanRecord)
-            mExecutor.execute(it)
+        if (mExecutor == null) {
+            mExecutor = Executors.newSingleThreadExecutor()
         }
+
+        mExecutor?.also { ex ->
+            mScanRunnable.also {
+                it.setDevice(device, rssi, scanRecord)
+                ex.execute(it)
+            }
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -483,7 +529,9 @@ abstract class BaseBleHelper {
         }
 
         override fun run() {
-            mReference.get()?.checkDevice(device, rssi, scanRecord)
+            if (!Thread.interrupted()) {
+                mReference.get()?.checkDevice(device, rssi, scanRecord)
+            }
         }
     }
 

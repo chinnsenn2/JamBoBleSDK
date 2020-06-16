@@ -69,7 +69,7 @@ public class PermissionsUtil {
     public static void requestDonotHandler(final FragmentActivity fragmentActivity, final OnPermissionDonotHandler permissionDonotHandler, final String... permission) {
         new RxPermissions(fragmentActivity)
                 .request(permission)
-                .subscribe(new io.reactivex.Observer<Boolean>() {
+                .subscribe(new Observer<Boolean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 

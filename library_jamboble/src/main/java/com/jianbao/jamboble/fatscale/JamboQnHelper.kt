@@ -1,13 +1,11 @@
 package com.jianbao.jamboble.fatscale
 
-import android.bluetooth.BluetoothDevice
-import android.content.Context
-import android.content.pm.PackageManager
-import com.jianbao.jamboble.BleHelper
+import android.app.Application
+import com.jianbao.fastble.JamBoBleHelper
+import com.jianbao.fastble.data.BleDevice
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.data.FatScaleData
 import com.jianbao.jamboble.data.QnUser
-import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.utils.LogUtils
 import com.yolanda.health.qnblesdk.constant.QNIndicator
 import com.yolanda.health.qnblesdk.listener.QNBleConnectionChangeListener
@@ -15,144 +13,63 @@ import com.yolanda.health.qnblesdk.listener.QNScaleDataListener
 import com.yolanda.health.qnblesdk.out.*
 import java.lang.ref.WeakReference
 
-class QnHelper private constructor(context: Context) {
-
+class JamboQnHelper {
+    private var context: Application? = null
+    private var mQNUser: QNUser? = null
+    private var mJamBoBleHelper: JamBoBleHelper? = null
     private var mQNBleConnectionChangeListener = JamboQNBleConnectionChangeListener(this)
     private var mQNDataListener = JamboQNScaleDataListener(this)
-    private var mConnectTime = 0
-    private var mBleHelper: BleHelper? = null
-    private var mBtDevice: BTDevice? = null
-    private var mQNUser: QNUser? = null
-    private var mWeakReference: WeakReference<Context> = WeakReference(context)
+
+    private object Singleton {
+        val instance = JamboQnHelper()
+    }
 
     companion object {
-        private var instance: QnHelper? = null
-
         @JvmStatic
-        fun getInstance(context: Context): QnHelper {
-            if (instance == null) {
-                synchronized(QnHelper::class.java) {
-                    if (instance == null) {
-//                        initQnSDK(context)
-                        instance = QnHelper(context)
-                    }
-                }
-            }
-            return instance!!
-        }
-
-        private var mQnInitTime = 0
-
-        @JvmStatic
-        private fun initQnSDK(context: Context?) {
-            context?.also { c ->
-                c.packageManager?.also { packageManager ->
-                    if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                        val encryptPath = "file:///android_asset/hzyb20160314175503.qn"
-                        QNBleApi.getInstance(c).also {
-                            it.initSdk("hzyb20160314175503", encryptPath) { code, msg ->
-                                if (code != 0) {
-                                    if (mQnInitTime < 3) {
-                                        mQnInitTime += 1
-                                        initQnSDK(c)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
+        val instance = Singleton.instance
     }
 
-    init {
-        mWeakReference.get()?.also {
-            QNBleApi.getInstance(it).also {
-                it.setBleConnectionChangeListener(mQNBleConnectionChangeListener)
-                it.setDataListener(mQNDataListener)
-            }
+    fun init(app: Application) {
+        this.context = app
+        QNBleApi.getInstance(context).also {
+            it.setBleConnectionChangeListener(mQNBleConnectionChangeListener)
+            it.setDataListener(mQNDataListener)
         }
     }
 
     fun connectDevice(
-        bleHelper: BleHelper,
-        qNUser: QnUser,
-        device: BluetoothDevice,
-        btDevice: BTDevice,
-        rssi: Int,
-        scanRecord: ByteArray
+        helper: JamBoBleHelper,
+        bleDevice: BleDevice?
     ) {
-        this.mBleHelper = bleHelper
-        this.mBtDevice = btDevice
-
-        mWeakReference.get()?.also { ctx ->
-            QNBleApi.getInstance(ctx).also {
-                mQNUser = it.buildUser(
-                    qNUser.user_id,
-                    qNUser.height,
-                    qNUser.gender,
-                    qNUser.birthday
-                ) { _, _ -> }
-            }
-            QNBleApi.getInstance(ctx).also {
-                it.buildDevice(device, rssi, scanRecord) { _, _ -> }
-                    .also { qd ->
-                        mQNUser?.let { qnUser ->
-                            it.connectDevice(qd, qnUser)
-                            { _, _ -> }
+        this.mJamBoBleHelper = helper
+        this.mQNUser?.also { user ->
+            QNBleApi.getInstance(context).also {
+                bleDevice?.also { bd ->
+                    it.buildDevice(bd.device, bd.rssi, bd.scanRecord) { _, _ -> }
+                        .also { qd ->
+                            it.connectDevice(qd, user) { _, _ -> }
                         }
-                            ?: also { qnHelper ->
-                                qnHelper.mBleHelper?.scanLeDevice(true)
-                            }
-                    }
-            }
-        }
-
-    }
-
-    fun connectDevice(
-        device: BluetoothDevice,
-        btDevice: BTDevice,
-        rssi: Int,
-        scanRecord: ByteArray
-    ) {
-        this.mBtDevice = btDevice
-        mWeakReference.get()?.also { ctx ->
-            QNBleApi.getInstance(ctx).also {
-                it.buildDevice(device, rssi, scanRecord) { _, _ -> }
-                    .also { qd ->
-                        mQNUser?.let { qnUser ->
-                            it.connectDevice(qd, qnUser)
-                            { _, _ -> }
-                        }
-                            ?: also { qnHelper ->
-                                qnHelper.mBleHelper?.scanLeDevice(true)
-                            }
-                    }
+                }
             }
         }
 
     }
 
     fun updateQNUser(qNUser: QnUser) {
-        mWeakReference.get()?.also { ctx ->
-            QNBleApi.getInstance(ctx).also {
-                mQNUser = it.buildUser(
-                    qNUser.user_id,
-                    qNUser.height,
-                    qNUser.gender,
-                    qNUser.birthday
-                ) { _, _ -> }
-            }
-        }
+        this.mQNUser = QNBleApi.getInstance(context).buildUser(
+            qNUser.user_id,
+            qNUser.height,
+            qNUser.gender,
+            qNUser.birthday
+        ) { _, _ -> }
     }
 
     fun isInitQnUser(): Boolean {
-        return (mQNUser != null)
+        return (this.mQNUser != null)
     }
 
-    class JamboQNBleConnectionChangeListener(qnHelper: QnHelper) : QNBleConnectionChangeListener {
+    class JamboQNBleConnectionChangeListener(qnHelper: JamboQnHelper) : QNBleConnectionChangeListener {
+        private var mConnectTime = 0
         private val weakReference = WeakReference(qnHelper)
 
         override fun onConnecting(qnBleDevice: QNBleDevice) {
@@ -161,7 +78,7 @@ class QnHelper private constructor(context: Context) {
 
         override fun onConnected(qnBleDevice: QNBleDevice) {
             weakReference.get()?.also {
-                it.mBleHelper?.onBTStateChanged(BleState.CONNECTED)
+                it.mJamBoBleHelper?.onBTStateChanged(BleState.CONNECTED)
             }
         }
 
@@ -171,16 +88,16 @@ class QnHelper private constructor(context: Context) {
         override fun onConnectError(qnBleDevice: QNBleDevice, i: Int) {
 
             weakReference.get()?.also {
-                if (it.mConnectTime < 3) {
-                    it.mBleHelper?.scanLeDevice(true)
-                    ++it.mConnectTime
+                if (mConnectTime < 3) {
+                    it.mJamBoBleHelper?.scanFatScaleDevice()
+                    ++mConnectTime
                 }
             }
         }
 
     }
 
-    class JamboQNScaleDataListener(qnHelper: QnHelper) : QNScaleDataListener {
+    class JamboQNScaleDataListener(qnHelper: JamboQnHelper) : QNScaleDataListener {
         private val weakReference = WeakReference(qnHelper)
 
         override fun onScaleStateChange(p0: QNBleDevice?, p1: Int) {
@@ -201,7 +118,7 @@ class QnHelper private constructor(context: Context) {
             v: Double
         ) {
             weakReference.get()?.also {
-                it.mBleHelper?.onUnsteadyValue(v.toFloat())
+                it.mJamBoBleHelper?.onUnsteadyValue(v.toFloat())
             }
         }
 
@@ -278,17 +195,10 @@ class QnHelper private constructor(context: Context) {
             }
 
             weakReference.get()?.also {
-                fatData.deviceID = it.mBtDevice?.btDeviceID!!
-                it.mBleHelper?.onBTDataReceived(fatData)
+                it.mJamBoBleHelper?.onBTDataReceived(fatData)
             }
         }
 
     }
 
-    fun dispose() {
-        mBleHelper = null
-        mBtDevice = null
-        mQNUser = null
-        mWeakReference.clear()
-    }
 }

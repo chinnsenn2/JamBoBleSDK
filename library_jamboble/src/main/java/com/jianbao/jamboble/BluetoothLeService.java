@@ -118,8 +118,6 @@ public class BluetoothLeService extends Service {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-
-
             LogUtils.i("onDescriptorWrite: " + descriptor.getCharacteristic().getUuid());
             broadcastUpdate(ACTION_CHARACTER_NOTIFICATION, descriptor.getCharacteristic().getUuid().toString());
         }
@@ -192,7 +190,7 @@ public class BluetoothLeService extends Service {
         // After using a given device, you should make sure that BluetoothGatt.close() is called
         // such that resources are cleaned up properly.  In this particular example, close() is
         // invoked when the UI is disconnected from the Service.
-        LogUtils.i("THREAD NAME2222222=========" + Thread.currentThread().getName() + ":" + System.currentTimeMillis());
+        LogUtils.i(String.valueOf(System.currentTimeMillis()));
         close();
         return super.onUnbind(intent);
     }
@@ -344,22 +342,16 @@ public class BluetoothLeService extends Service {
 //            mBluetoothGatt.writeDescriptor(descriptor);
         //}
 
-        if (enabled) {
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-            if (descriptor != null) {
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+
+        if (descriptor != null) {
+            if (enabled) {
                 descriptor.setValue(enabledValue);
-                mBluetoothGatt.writeDescriptor(descriptor);
-            }
-
-        } else {
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-            if (descriptor != null) {
+            } else {
                 descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-                mBluetoothGatt.writeDescriptor(descriptor);
             }
-
+            mBluetoothGatt.writeDescriptor(descriptor);
         }
     }
 
@@ -422,6 +414,4 @@ public class BluetoothLeService extends Service {
             mBluetoothGatt.writeCharacteristic(ch);
         }
     }
-
-
 }

@@ -24,7 +24,7 @@ public class YolandaFatScale extends BTDevice {
     private static final long serialVersionUID = 1L;
     private boolean mMark1 = false; //判断收到了结果数据包1
     private boolean mMark2 = false; //判断收到了结果数据包2
-    private int mScaleDivision = 0;
+//    private int mScaleDivision = 0;
 
     private byte mAge = 0x20;
     private byte mHeight = (byte) 0xB0;
@@ -73,11 +73,11 @@ public class YolandaFatScale extends BTDevice {
 //				}
 
                 //int scaleVer = 0xFF & data[12]; //秤体端软件版本(01,02,03...表示)
-                int scaleDivision = 0xFF & data[13]; //ScaleDivision：秤端重量分辨度(00：0.1kg；01：0.01kg)
+//                int scaleDivision = 0xFF & data[13]; //ScaleDivision：秤端重量分辨度(00：0.1kg；01：0.01kg)
                 //int bleVer =  0xFF & data[14];//蓝牙端软件版本(01,02,03....表示)
                 //int scaleStatus =  0xFF & data[15];//秤体状态(00-开机,01-关机)；
                 //int storeCount =  0xFF & data[16];//本地存储测量笔数。
-                mScaleDivision = scaleDivision;
+//                mScaleDivision = scaleDivision;
 
                 byte[] wByte = new byte[12];
                 wByte[0] = 0x02;

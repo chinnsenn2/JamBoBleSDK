@@ -24,7 +24,7 @@ class BloodThreeOnOneActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blood_three_on_one)
 
-        BleHelper.instance.setDataCallBack(
+        BleHelper.instance.addBleDataCallback(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {

@@ -43,7 +43,7 @@ class OxiMeterActivity : AppCompatActivity() {
             BleHelper.instance.doSearch(this, BTDeviceSupport.DeviceType.OXIMETER)
         }
         //通用数据回调
-        BleHelper.instance.setDataCallBack(
+        BleHelper.instance.addBleDataCallback(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -83,7 +83,7 @@ class OxiMeterActivity : AppCompatActivity() {
 
             })
 
-        BleHelper.instance.setBleStatusCallback(
+        BleHelper.instance.addBleStatusCallback(
             object : IBleStatusCallback {
                 override fun onBTDeviceFound(device: BluetoothDevice?) {
                 }
