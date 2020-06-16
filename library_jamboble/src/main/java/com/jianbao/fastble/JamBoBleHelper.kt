@@ -32,6 +32,13 @@ class JamBoBleHelper {
     var mDataCallback: BleDataCallback? = null
     var mBleStatusCallback: IBleStatusCallback? = null
     var mUnSteadyValueCallBack: UnSteadyValueCallBack? = null
+    private var mBTDevice: BTDevice? = null
+
+    fun setBTDevice(btDevice: BTDevice?) {
+        this.mBTDevice = btDevice
+    }
+
+    fun getBTDevice() = mBTDevice
 
     private val mJamboBleScanCallback by lazy {
         JamboBleScanCallback(this)
@@ -105,6 +112,15 @@ class JamBoBleHelper {
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build()
+
+        private val threeOnOneBleScanRuleConfig = BleScanRuleConfig.Builder()
+            .setDeviceName(
+                true,
+                "BeneCheck TC-B DONGLE", "BeneCheck"
+            ) // 只扫描指定广播名的设备，可选
+            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
+            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
+            .build()
     }
 
     fun init(app: Application) {
@@ -142,7 +158,7 @@ class JamBoBleHelper {
     /**
      * 数据回调
      */
-    fun setDataCallBack(callback: BleDataCallback) {
+    fun setBleDataCallBack(callback: BleDataCallback) {
         this.mDataCallback = callback
     }
 
@@ -189,9 +205,23 @@ class JamBoBleHelper {
         scan(BTDeviceSupport.DeviceType.OXIMETER)
     }
 
+//    fun scanNoxSleepLightDevice() {
+//        BleManager.getInstance().initScanRule(oxiMeterBleScanRuleConfig)
+//        scan(BTDeviceSupport.DeviceType.SLEEPLIGHT)
+//    }
+
+    fun scanThreeOnOneDevice() {
+        BleManager.getInstance().initScanRule(threeOnOneBleScanRuleConfig)
+        scan(BTDeviceSupport.DeviceType.THREEONONE)
+    }
+
     fun scan(type: BTDeviceSupport.DeviceType) {
         mJamboBleScanCallback.setType(type)
         BleManager.getInstance().scan(mJamboBleScanCallback)
+    }
+
+    fun stopScan() {
+        BleManager.getInstance().cancelScan()
     }
 
     /**
@@ -349,6 +379,7 @@ class JamBoBleHelper {
                 mBTDevice?.notifyCharacterUUID,
                 false
             )
+            mWeakReference.get()?.setBTDevice(null)
             mWeakReference.get()?.onBTStateChanged(BleState.DISCONNECT)
         }
 
@@ -357,6 +388,7 @@ class JamBoBleHelper {
             BleManager.getInstance().cancelScan()
             setBleDevice(bleDevice)
             mBTDevice?.also {
+                mWeakReference.get()?.setBTDevice(it)
                 BleManager.getInstance().notify(bleDevice,
                     it.serviceUUID,
                     it.notifyCharacterUUID,

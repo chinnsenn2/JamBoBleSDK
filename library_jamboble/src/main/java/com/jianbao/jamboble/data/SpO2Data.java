@@ -6,8 +6,6 @@ package com.jianbao.jamboble.data;
  */
 
 public class SpO2Data extends BTData{
-
-
     private int mSpO2;
     private int mPR;
     private float mPI;
@@ -61,5 +59,17 @@ public class SpO2Data extends BTData{
 
     public void setMode(int mode) {
         mMode = mode;
+    }
+
+    @Override
+    public String toString() {
+        return "SpO2Data{" +
+                "mSpO2=" + mSpO2 +
+                ", mPR=" + mPR +
+                ", mPI=" + mPI +
+                ", mStatus=" + mStatus +
+                ", mPower=" + mPower +
+                ", mMode=" + mMode +
+                '}';
     }
 }

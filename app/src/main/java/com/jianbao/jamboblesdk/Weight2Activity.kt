@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.jianbao.fastble.BleManager
 import com.jianbao.fastble.JamBoBleHelper
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
@@ -36,7 +35,7 @@ class Weight2Activity : AppCompatActivity() {
             }
         )
 
-        JamBoBleHelper.instance.setDataCallBack(
+        JamBoBleHelper.instance.setBleDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     runOnUiThread {
@@ -113,7 +112,7 @@ class Weight2Activity : AppCompatActivity() {
                         JamBoBleHelper.instance.scanFatScaleDevice()
                     }
                     "停止扫描" -> {
-                        BleManager.getInstance().cancelScan()
+                        JamBoBleHelper.instance.stopScan()
                     }
                 }
             }

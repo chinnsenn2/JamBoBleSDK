@@ -5,7 +5,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.jianbao.fastble.JamBoBleHelper
-import com.jianbao.jamboble.BleHelper
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.data.BTData
@@ -21,7 +20,7 @@ class BloodActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blood)
         title = "血压测量"
-        JamBoBleHelper.instance.setDataCallBack(
+        JamBoBleHelper.instance.setBleDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     when (state) {
@@ -93,7 +92,7 @@ class BloodActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         //释放资源
-        BleHelper.instance.destroy()
+        JamBoBleHelper.instance.destroy()
         super.onDestroy()
     }
 }
