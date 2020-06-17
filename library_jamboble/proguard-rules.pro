@@ -24,6 +24,21 @@ public <fields>;
 public <methods>;
 
 }
+-keep class com.jianbao.jamboble.*.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.jianbao.fastble.* {
+public <fields>;
+public <methods>;
+
+}
+-keep class com.jianbao.fastble.*.* {
+public <fields>;
+public <methods>;
+
+}
 -keep class com.jianbao.jamboble.draw.* {
 public <fields>;
 public <methods>;
