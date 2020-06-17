@@ -13,7 +13,7 @@ import com.jianbao.jamboble.data.FatScaleData
 import com.jianbao.jamboble.data.QnUser
 import java.util.*
 
-class Weight2Activity : AppCompatActivity() {
+class WeightActivity : AppCompatActivity() {
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
     private val mTvValue by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_value) }
     private val mBtnOpenBle by lazy(LazyThreadSafetyMode.NONE) { findViewById<Button>(R.id.btn_open_ble) }

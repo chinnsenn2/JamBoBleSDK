@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".WeightActivity" />
-        <activity android:name=".Weight2Activity" />
+        <activity android:name=".WeightActivity" />
     </application>
 
 </manifest>

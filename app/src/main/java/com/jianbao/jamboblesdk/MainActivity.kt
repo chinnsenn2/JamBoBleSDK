@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v) {
             mBtnWeight -> {
-                startActivity(Intent(this, Weight2Activity::class.java))
+                startActivity(Intent(this, WeightActivity::class.java))
             }
             mBtnBloodPressure -> {
                 startActivity(Intent(this, BloodActivity::class.java))

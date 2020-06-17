@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-    implementation files('libs/library_jamboble.aar')
 
     implementation rootProject.ext.dependencies.appcompatx
     implementation rootProject.ext.dependencies.core_ktx
@@ -43,5 +42,6 @@ dependencies {
     implementation rootProject.ext.dependencies.localbroadcastmanagerx
     implementation rootProject.ext.dependencies.kotlin
     implementation rootProject.ext.dependencies.constraintlayout
+    implementation files('libs/jamboble_1.0.aar')
     annotationProcessor rootProject.ext.dependencies.annotationx
 }
