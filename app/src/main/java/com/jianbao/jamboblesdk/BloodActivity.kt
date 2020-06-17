@@ -79,7 +79,6 @@ class BloodActivity : AppCompatActivity() {
                 }
 
                 override fun onLocalBTEnabled(enabled: Boolean) {
-                    //蓝牙授权失败
                 }
 
             }
@@ -87,6 +86,8 @@ class BloodActivity : AppCompatActivity() {
 
         mBtnOpenBle.setOnClickListener {
             JamBoBleHelper.instance.scanBloodPressureDevice()
+//            JamBoBleHelper.instance.scanBloodSugarDevice()
+//            JamBoBleHelper.instance.scanUricAcidDevice()
         }
     }
 

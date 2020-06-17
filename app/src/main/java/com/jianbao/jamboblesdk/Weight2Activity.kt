@@ -99,7 +99,6 @@ class Weight2Activity : AppCompatActivity() {
 
                 override fun onLocalBTEnabled(enabled: Boolean) {
 
-                    //蓝牙授权失败
                 }
 
             }
