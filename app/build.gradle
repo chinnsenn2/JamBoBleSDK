@@ -44,6 +44,9 @@ dependencies {
     implementation rootProject.ext.dependencies.localbroadcastmanagerx
     implementation rootProject.ext.dependencies.rxjava2
     implementation rootProject.ext.dependencies.rxandroid2
+    implementation rootProject.ext.dependencies.recyclerviewx
+    implementation rootProject.ext.dependencies.recyclerviewx_selection
+    implementation rootProject.ext.dependencies.baserecyclerviewadapterhelper
     implementation project(path: ':library_jamboble')
     annotationProcessor rootProject.ext.dependencies.annotationx
 }

@@ -27,6 +27,7 @@ public class BleScanner {
     }
 
     private BleScanState mBleScanState = BleScanState.STATE_IDLE;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     private BleScanPresenter mBleScanPresenter = new BleScanPresenter() {
 
@@ -40,7 +41,7 @@ public class BleScanner {
 
         @Override
         public void onLeScan(BleDevice bleDevice) {
-            if (mBleScanPresenter.ismNeedConnect()) {
+            if (mBleScanPresenter.isNeedConnect()) {
                 BleScanAndConnectCallback callback = (BleScanAndConnectCallback)
                         mBleScanPresenter.getBleScanPresenterImp();
                 if (callback != null) {
@@ -64,7 +65,7 @@ public class BleScanner {
 
         @Override
         public void onScanFinished(List<BleDevice> bleDeviceList) {
-            if (mBleScanPresenter.ismNeedConnect()) {
+            if (mBleScanPresenter.isNeedConnect()) {
                 final BleScanAndConnectCallback callback = (BleScanAndConnectCallback)
                         mBleScanPresenter.getBleScanPresenterImp();
                 if (bleDeviceList == null || bleDeviceList.size() < 1) {
@@ -76,12 +77,7 @@ public class BleScanner {
                         callback.onScanFinished(bleDeviceList.get(0));
                     }
                     final List<BleDevice> list = bleDeviceList;
-                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            BleManager.getInstance().connect(list.get(0), callback);
-                        }
-                    }, 100);
+                    mHandler.postDelayed(() -> BleManager.getInstance().connect(list.get(0), callback), 100);
                 }
             } else {
                 BleScanCallback callback = (BleScanCallback) mBleScanPresenter.getBleScanPresenterImp();

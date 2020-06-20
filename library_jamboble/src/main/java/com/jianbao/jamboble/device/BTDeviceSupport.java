@@ -16,9 +16,9 @@
 
 package com.jianbao.jamboble.device;
 
-import android.bluetooth.BluetoothDevice;
 import android.text.TextUtils;
 
+import com.jianbao.fastble.data.BleDevice;
 import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 
 import java.util.HashMap;
@@ -236,7 +236,7 @@ public class BTDeviceSupport {
      * @param deviceType
      * @return
      */
-    public static BTDevice checkSupport(BluetoothDevice device, DeviceType deviceType) {
+    public static BTDevice checkSupport(BleDevice device, DeviceType deviceType) {
         if (deviceType == DeviceType.BLOOD_PRESSURE) {
             if (mBloodPressureDevice.containsKey(device.getName())) {
                 return mBloodPressureDevice.get(device.getName());
@@ -294,8 +294,8 @@ public class BTDeviceSupport {
             if (TextUtils.isEmpty(device.getName())) {
                 return null;
             }
-            Set<Map.Entry<String, BTDevice>> entryseSet = mThreeOnOneDevice.entrySet();
-            for (Map.Entry<String, BTDevice> entry : entryseSet) {
+            Set<Map.Entry<String, BTDevice>> entrySet = mThreeOnOneDevice.entrySet();
+            for (Map.Entry<String, BTDevice> entry : entrySet) {
                 if (device.getName().contains(entry.getKey())) {
                     return mThreeOnOneDevice.get(entry.getKey());
                 }
@@ -306,8 +306,15 @@ public class BTDeviceSupport {
             Set<Map.Entry<String, BTDevice>> entryseSet = mFetalHeartDevice.entrySet();
             for (Map.Entry<String, BTDevice> entry : entryseSet) {
                 if (!TextUtils.isEmpty(device.getName()) && device.getName().startsWith(entry.getKey())) {
-                    return mThreeOnOneDevice.get(entry.getKey());
+                    return mFetalHeartDevice.get(entry.getKey());
                 }
+            }
+        }
+
+        if (deviceType == DeviceType.SLEEPLIGHT) {
+            String deviceId = formatDeviceID(device.getScanRecord());
+            if (!TextUtils.isEmpty(deviceId)) {
+                return new NoxSleepLightDevice();
             }
         }
 
@@ -337,5 +344,52 @@ public class BTDeviceSupport {
         }
 
         return false;
+    }
+
+    /**
+     * 格式化设备ID
+     *
+     * @param scanRecord
+     * @return
+     */
+    public static String formatDeviceID(byte[] scanRecord) {
+        String deviceId = null;
+        String str = getBleDeviceName(0xff, scanRecord);
+        if (str != null) {
+            //902B是之前做的，还是加-
+            if (str.length() >= 13 && !str.startsWith("SN21")) {
+                deviceId = str;
+            } else {
+                deviceId = str.substring(0, 2).toUpperCase() + "-" + str.substring(2);
+            }
+        }
+        return deviceId;
+    }
+
+    public static String getBleDeviceName(int type, byte[] record) {
+        byte[] data = null;
+        int index = 0;
+        while (index < record.length) {
+            int len = record[index] & 0xFF;
+            int tp = record[index + 1] & 0xFF;
+            if (index + len + 1 > 31) {
+                break;
+            } else if (len == 0) {
+                break;
+            }
+            if (type == tp) {
+                data = new byte[len - 1];
+                for (int i = 0; i < len - 1; i++) {
+                    data[i] = record[index + 2 + i];
+                }
+                break;
+            }
+            index += (len + 1);
+        }
+
+        if (data != null) {
+            return new String(data);
+        }
+        return null;
     }
 }

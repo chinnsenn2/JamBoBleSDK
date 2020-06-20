@@ -84,7 +84,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
         mHandling = true;
     }
 
-    public boolean ismNeedConnect() {
+    public boolean isNeedConnect() {
         return mNeedConnect;
     }
 

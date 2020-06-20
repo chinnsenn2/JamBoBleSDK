@@ -30,7 +30,6 @@ public abstract class BTDevice implements Serializable {
 	private int bTDeviceID = -1;
 
 	public BTDevice(String deviceAlias, String deviceName, String serviceUUID, String characterUUID) {
-		super();
 		this.deviceAlias = deviceAlias;
 		this.deviceName = deviceName;
 		this.serviceUUID = serviceUUID;
@@ -38,7 +37,6 @@ public abstract class BTDevice implements Serializable {
 	}
 
 	public BTDevice(String deviceAlias, String deviceName, String serviceUUID, String notifyUUID, String writeUUID) {
-		super();
 		this.deviceAlias = deviceAlias;
 		this.deviceName = deviceName;
 		this.serviceUUID = serviceUUID;

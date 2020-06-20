@@ -15,7 +15,7 @@ public class FetalHeartLciFMDevice extends BTDevice {
 
     public FetalHeartLciFMDevice() {
         super("胎心仪",
-                "LciFM",
+                "LCiFM",
                 "0000fff0-0000-1000-8000-00805f9b34fb",
                 "0000fff1-0000-1000-8000-00805f9b34fb");
     }

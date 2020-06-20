@@ -15,9 +15,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.Message
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentActivity
-import com.dovar.dtoast.DToast
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.data.BTData
@@ -248,7 +248,7 @@ abstract class BaseBleHelper {
     }
 
     fun showToast(activity: FragmentActivity?, msg: String) {
-        DToast.make(activity).setText(R.id.tv_content_default, msg).show()
+        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
     }
 
     open fun destroy() {

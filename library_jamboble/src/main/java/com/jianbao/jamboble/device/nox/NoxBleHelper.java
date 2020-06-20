@@ -337,6 +337,7 @@ public class NoxBleHelper {
             if (mBluetoothAdapter != null && mLeScanCallback != null) {
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);
             }
+
             callbackState(ConnectionState.STOP_SCAN);
         }
     }

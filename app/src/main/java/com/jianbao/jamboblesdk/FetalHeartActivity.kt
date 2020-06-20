@@ -5,11 +5,11 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.jianbao.fastble.JamBoBleHelper
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.data.BTData
-import com.jianbao.jamboble.fetalheart.FetalHeartBleHelper
 
 class FetalHeartActivity : AppCompatActivity() {
     private val mTvStatus by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.tv_status) }
@@ -28,14 +28,15 @@ class FetalHeartActivity : AppCompatActivity() {
          * 而是在 IBleStatusCallback#onBTDeviceFound 返回合适的设备 BluetoothDevice ，也可以通过 getBluetoothDevice 获取
          */
         mBtnOpenBle.setOnClickListener {
+            JamBoBleHelper.instance.scanFetalHeartDevice()
         }
 
         mBtnConnectBle.setOnClickListener {
-            FetalHeartBleHelper.instance.connect(this)
+
         }
 
         //数据回调
-        FetalHeartBleHelper.instance.addBleDataCallback(
+        JamBoBleHelper.instance.setBleDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     println("FetalHeartActivity.onBTStateChanged")
@@ -53,7 +54,7 @@ class FetalHeartActivity : AppCompatActivity() {
         )
 
         //蓝牙设备状态回调
-        FetalHeartBleHelper.instance.addBleStatusCallback(
+        JamBoBleHelper.instance.setBleStatusCallback(
             object : IBleStatusCallback {
                 override fun onBTDeviceFound(device: BluetoothDevice?) {
                     println("device = [${device}]")
@@ -68,7 +69,7 @@ class FetalHeartActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        FetalHeartBleHelper.instance.destroy()
+        JamBoBleHelper.instance.destroy()
         super.onDestroy()
     }
 

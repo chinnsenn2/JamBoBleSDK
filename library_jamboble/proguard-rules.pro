@@ -75,3 +75,4 @@ public <methods>;
 -keep class * implements android.os.Parcelable{ # 保持Parcelable不被混淆
     public static final android.os.Parcelable.Creator *;
 }
+-libraryjars src/main/jniLibs/*

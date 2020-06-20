@@ -15,15 +15,16 @@ import com.jianbao.jamboble.BuildConfig
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.IBleStatusCallback
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack
-import com.jianbao.jamboble.data.BTData
-import com.jianbao.jamboble.data.CholestenoneData
-import com.jianbao.jamboble.data.QnUser
-import com.jianbao.jamboble.data.UricAcidData
+import com.jianbao.jamboble.data.*
 import com.jianbao.jamboble.device.BTDevice
 import com.jianbao.jamboble.device.BTDeviceSupport
 import com.jianbao.jamboble.device.oximeter.OxiMeterHelper
 import com.jianbao.jamboble.device.oximeter.OximeterDevice
 import com.jianbao.jamboble.fatscale.JamboQnHelper
+import com.jianbao.jamboble.fetalheart.FetalHeartConnector
+import com.jianbao.jamboble.fetalheart.FetalHeartConnector.Companion.CONNECT_FAILED
+import com.jianbao.jamboble.fetalheart.FetalHeartConnector.Companion.CONNECT_SUCCESS
+import com.jianbao.jamboble.fetalheart.FetalHeartConnector.Companion.READ_DATA_FAILED
 import com.jianbao.jamboble.utils.LogUtils
 import com.yolanda.health.qnblesdk.out.QNBleApi
 import java.lang.ref.WeakReference
@@ -32,6 +33,8 @@ class JamBoBleHelper {
     var mDataCallback: BleDataCallback? = null
     var mBleStatusCallback: IBleStatusCallback? = null
     var mUnSteadyValueCallBack: UnSteadyValueCallBack? = null
+
+    private var mFetalHeartConnector: FetalHeartConnector? = null
     private var mBTDevice: BTDevice? = null
 
     fun setBTDevice(btDevice: BTDevice?) {
@@ -121,6 +124,20 @@ class JamBoBleHelper {
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build()
+
+        private val sleepLightBleScanRuleConfig = BleScanRuleConfig.Builder()
+            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
+            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
+            .build()
+
+        private val fetalHeartBleScanRuleConfig = BleScanRuleConfig.Builder()
+            .setDeviceName(
+                true,
+                "iFM", "LCiFM"
+            ) // 只扫描指定广播名的设备，可选
+            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
+            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
+            .build()
     }
 
     fun init(app: Application) {
@@ -145,7 +162,7 @@ class JamBoBleHelper {
         QNBleApi.getInstance(app)
             .initSdk(
                 "hzyb20160314175503", encryptPath
-            ) { i, s ->
+            ) { i, _ ->
                 if (i != 0) {
                     if (mQnInitTime < 3) {
                         mQnInitTime += 1
@@ -205,8 +222,8 @@ class JamBoBleHelper {
         scan(BTDeviceSupport.DeviceType.OXIMETER)
     }
 
-//    fun scanNoxSleepLightDevice() {
-//        BleManager.getInstance().initScanRule(oxiMeterBleScanRuleConfig)
+//    fun scanSleepLightDevice() {
+//        BleManager.getInstance().initScanRule(sleepLightBleScanRuleConfig)
 //        scan(BTDeviceSupport.DeviceType.SLEEPLIGHT)
 //    }
 
@@ -215,7 +232,12 @@ class JamBoBleHelper {
         scan(BTDeviceSupport.DeviceType.THREEONONE)
     }
 
-    fun scan(type: BTDeviceSupport.DeviceType) {
+//    fun scanFetalHeartDevice() {
+//        BleManager.getInstance().initScanRule(fetalHeartBleScanRuleConfig)
+//        scan(BTDeviceSupport.DeviceType.FETAL_HEART)
+//    }
+
+    private fun scan(type: BTDeviceSupport.DeviceType) {
         mJamboBleScanCallback.setType(type)
         BleManager.getInstance().scan(mJamboBleScanCallback)
     }
@@ -294,8 +316,7 @@ class JamBoBleHelper {
     class JamboBleScanCallback(
         helper: JamBoBleHelper,
         type: BTDeviceSupport.DeviceType = BTDeviceSupport.DeviceType.FAT_SCALE
-    ) :
-        BleScanCallback() {
+    ) : BleScanCallback() {
         private val mWeakReference = WeakReference(helper)
         private var mType = type
 
@@ -317,7 +338,7 @@ class JamBoBleHelper {
 
         override fun onScanning(bleDevice: BleDevice?) {
             BTDeviceSupport.checkSupport(
-                bleDevice?.device,
+                bleDevice,
                 mType
             )?.also { btDevice ->
                 mWeakReference.get()?.also {
@@ -339,9 +360,40 @@ class JamBoBleHelper {
                         BTDeviceSupport.DeviceType.OXIMETER -> {
                             BleManager.getInstance().connect(bleDevice, mJamboBleGattCallback)
                         }
-                        BTDeviceSupport.DeviceType.SLEEPLIGHT -> TODO()
-                        BTDeviceSupport.DeviceType.THREEONONE -> TODO()
-                        BTDeviceSupport.DeviceType.FETAL_HEART -> TODO()
+                        BTDeviceSupport.DeviceType.SLEEPLIGHT -> {
+                            BleManager.getInstance().connect(bleDevice, mJamboBleGattCallback)
+                        }
+                        BTDeviceSupport.DeviceType.THREEONONE -> {
+                            BleManager.getInstance().connect(bleDevice, mJamboBleGattCallback)
+                        }
+
+                        BTDeviceSupport.DeviceType.FETAL_HEART -> {
+                            if (it.mFetalHeartConnector == null) {
+                                it.mFetalHeartConnector = FetalHeartConnector()
+                                it.mFetalHeartConnector?.setCallback(object :
+                                    FetalHeartConnector.Callback {
+                                    override fun dispInfor(data: FetalHeartData?) {
+                                        it.onBTDataReceived(data)
+                                    }
+
+                                    override fun dispServiceStatus(status: Int) {
+                                        if (status == CONNECT_SUCCESS) {
+                                            it.onBTStateChanged(BleState.CONNECTED)
+                                        } else if (status == CONNECT_FAILED
+                                            || status == READ_DATA_FAILED
+                                        ) {
+                                            it.onBTStateChanged(BleState.CONNECT_FAILED)
+                                        }
+                                    }
+                                })
+                            }
+                            it.mFetalHeartConnector?.setBluetoothDevice(bleDevice!!.device)
+                            it.mFetalHeartConnector?.start()
+                        }
+
+                        BTDeviceSupport.DeviceType.WRIST_BANDS -> {
+
+                        }
                     }
                 }
             }
@@ -389,6 +441,21 @@ class JamBoBleHelper {
             setBleDevice(bleDevice)
             mBTDevice?.also {
                 mWeakReference.get()?.setBTDevice(it)
+//                if (it is NoxSleepLightDevice) {
+//                    BleManager.getInstance().getBluetoothGattServices(bleDevice)
+//                        ?.forEach { service ->
+//                            println("onConnectSuccess.getBluetoothGattServices ... ${service.uuid}, ${service.type}")
+//                            BleManager.getInstance().getBluetoothGattCharacteristics(service)
+//                                .forEach { gc ->
+//                                    print("onConnectSuccess.getBluetoothGattCharacteristics ... ${gc.uuid}")
+//                                    gc.descriptors.forEach { d ->
+//                                        print("onConnectSuccess.descriptors ... $d")
+//                                    }
+//                                }
+//                        }
+//                    return
+//                }
+
                 BleManager.getInstance().notify(bleDevice,
                     it.serviceUUID,
                     it.notifyCharacterUUID,
@@ -430,6 +497,10 @@ class JamBoBleHelper {
         mDataCallback = null
         mBleStatusCallback = null
         mUnSteadyValueCallBack = null
+        mFetalHeartConnector?.also {
+            it.destroy()
+        }
+        mFetalHeartConnector = null
         BleManager.getInstance().destroy()
     }
 
