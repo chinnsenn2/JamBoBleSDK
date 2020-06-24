@@ -10,7 +10,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".FetalHeartActivity" />
+<!--        <activity android:name=".SleepLightActivity" />-->
+<!--        <activity android:name=".FetalHeartActivity" />-->
         <activity android:name=".OxiMeterActivity" />
         <activity android:name=".BloodThreeOnOneActivity" />
         <activity android:name=".BloodActivity" />
@@ -23,7 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WeightActivity" />
         <activity android:name=".WeightActivity" />
     </application>
 
