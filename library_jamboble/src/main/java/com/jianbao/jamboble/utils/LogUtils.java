@@ -1,7 +1,7 @@
 package com.jianbao.jamboble.utils;
 
-import androidx.multidex.BuildConfig;
 
+import com.jianbao.jamboble.BuildConfig;
 import com.orhanobut.logger.Logger;
 
 public class LogUtils {

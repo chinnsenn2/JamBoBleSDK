@@ -126,6 +126,10 @@ class JamboQnHelper {
             }
         }
 
+        override fun onScaleEventChange(p0: QNBleDevice?, p1: Int) {
+
+        }
+
         override fun onGetScaleData(
             qnBleDevice: QNBleDevice,
             qnScaleData: QNScaleData

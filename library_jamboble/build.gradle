@@ -16,7 +16,7 @@ android {
         consumerProguardFiles 'consumer-rules.pro'
 
         ndk {
-            abiFilters "armeabi","armeabi-v7a"
+            abiFilters "armeabi-v7a"
         }
     }
 
@@ -53,13 +53,9 @@ android {
 dependencies {
     api files('libs/CreativeHealth_pod.jar')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation rootProject.ext.dependencies.appcompatx
-    implementation rootProject.ext.dependencies.core_ktx
     implementation rootProject.ext.dependencies.logger
-    implementation rootProject.ext.dependencies.multidex
+    implementation rootProject.ext.dependencies.multidex_support
     implementation rootProject.ext.dependencies.gson
     implementation rootProject.ext.dependencies.kotlin
-    implementation rootProject.ext.dependencies.rxjava2
-    implementation rootProject.ext.dependencies.rxandroid2
-    annotationProcessor rootProject.ext.dependencies.annotationx
+    annotationProcessor rootProject.ext.dependencies.annotation
 }

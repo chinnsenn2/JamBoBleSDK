@@ -1,8 +1,8 @@
 package com.jianbao.jamboblesdk
 
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 
 class SleepLightActivity : AppCompatActivity() {
     private val mBtnOpenBle by lazy(LazyThreadSafetyMode.NONE) { findViewById<Button>(R.id.btn_open_ble) }

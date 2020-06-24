@@ -33,7 +33,7 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import androidx.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.BTWriteData;

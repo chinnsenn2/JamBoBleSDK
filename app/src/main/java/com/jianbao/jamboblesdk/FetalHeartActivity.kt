@@ -1,9 +1,9 @@
 package com.jianbao.jamboblesdk
 
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import com.jianbao.fastble.JamBoHelper
 import com.jianbao.fastble.data.BleDevice
 import com.jianbao.jamboble.BleState
