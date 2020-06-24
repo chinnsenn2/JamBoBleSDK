@@ -40,8 +40,13 @@ dependencies {
     implementation rootProject.ext.dependencies.multidex
     implementation rootProject.ext.dependencies.gson
     implementation rootProject.ext.dependencies.localbroadcastmanagerx
+    implementation rootProject.ext.dependencies.rxjava2
+    implementation rootProject.ext.dependencies.rxandroid2
+    implementation rootProject.ext.dependencies.recyclerviewx
+    implementation rootProject.ext.dependencies.recyclerviewx_selection
+    implementation rootProject.ext.dependencies.baserecyclerviewadapterhelper
     implementation rootProject.ext.dependencies.kotlin
     implementation rootProject.ext.dependencies.constraintlayout
-    implementation files('libs/jamboble_1.0.aar')
+    implementation files('libs/jamboble_1.1.aar')
     annotationProcessor rootProject.ext.dependencies.annotationx
 }

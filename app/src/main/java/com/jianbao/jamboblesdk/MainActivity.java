@@ -69,10 +69,10 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, BloodThreeOnOneActivity.class));
                         break;
                     case 4:
-                        startActivity(new Intent(MainActivity.this, SleepLightActivity.class));
+//                        startActivity(new Intent(MainActivity.this, SleepLightActivity.class));
                         break;
                     case 5:
-                        startActivity(new Intent(MainActivity.this, FetalHeartActivity.class));
+//                        startActivity(new Intent(MainActivity.this, FetalHeartActivity.class));
                         break;
                 }
             }
