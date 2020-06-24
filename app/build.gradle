@@ -48,6 +48,6 @@ dependencies {
     implementation rootProject.ext.dependencies.rxandroid2
     implementation rootProject.ext.dependencies.recyclerview
     implementation rootProject.ext.dependencies.baserecyclerviewadapterhelper
-    implementation project(path: ':library_jamboble')
+    implementation files('libs/jamboble_1.2.aar')
     annotationProcessor rootProject.ext.dependencies.annotation
 }

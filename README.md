@@ -5,14 +5,11 @@
 https://github.com/chinnsenn/JamBoBleSDK/releases 下载最新版本
 将 aar 文件放入 ../app/libs 文件夹下,并在 build.gradle
 ```java
-implementation files('libs/jamboble_1.1.aar')
+implementation files('libs/jamboble_1.2.aar')
 ```
-由于本地导入 aar 无法传递包中的远程依赖，所以请在主程依赖以下远程库:
-
-``` java 
-implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
-```
-如遇见其他 SDK 引起的 ClassNotFound 错误，请根据日志判断。
+依赖库已本地依赖 localbroadcastmanager
+~~由于本地导入 aar 无法传递包中的远程依赖，所以请在主程依赖以下远程库:~~
+~~如遇见其他 SDK 引起的 ClassNotFound 错误，请根据日志判断。~~
 # 初始化 SDK
 在 Application 或者使用之前调用 
 
