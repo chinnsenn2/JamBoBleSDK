@@ -1,7 +1,9 @@
 package com.jianbao.jamboble.fatscale
 
 import android.app.Application
-import com.jianbao.fastble.JamBoBleHelper
+import android.widget.Toast
+import com.jianbao.fastble.BleManager
+import com.jianbao.fastble.JamBoHelper
 import com.jianbao.fastble.data.BleDevice
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.data.FatScaleData
@@ -16,7 +18,7 @@ import java.lang.ref.WeakReference
 class JamboQnHelper {
     private var context: Application? = null
     private var mQNUser: QNUser? = null
-    private var mJamBoBleHelper: JamBoBleHelper? = null
+    private var mJamBoBleHelper: JamBoHelper? = null
     private var mQNBleConnectionChangeListener = JamboQNBleConnectionChangeListener(this)
     private var mQNDataListener = JamboQNScaleDataListener(this)
 
@@ -38,7 +40,7 @@ class JamboQnHelper {
     }
 
     fun connectDevice(
-        helper: JamBoBleHelper,
+        helper: JamBoHelper,
         bleDevice: BleDevice?
     ) {
         this.mJamBoBleHelper = helper
@@ -51,6 +53,8 @@ class JamboQnHelper {
                         }
                 }
             }
+        }?:also {
+            Toast.makeText(BleManager.getInstance().context, "请初始化用户数据", Toast.LENGTH_SHORT).show()
         }
 
     }

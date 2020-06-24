@@ -1,13 +1,13 @@
 package com.jianbao.jamboblesdk
 
 import android.app.Application
-import com.jianbao.fastble.JamBoBleHelper
+import com.jianbao.fastble.JamBoHelper
 
 class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        JamBoBleHelper.instance.init(this)
+        JamBoHelper.getInstance().init(this)
     }
 
 }

@@ -34,6 +34,7 @@ public <fields>;
 public <methods>;
 
 }
+-keep class com.jianbao.fastble.JamBoHelper
 -keep class com.jianbao.fastble.*.* {
 public <fields>;
 public <methods>;
@@ -75,4 +76,22 @@ public <methods>;
 -keep class * implements android.os.Parcelable{ # 保持Parcelable不被混淆
     public static final android.os.Parcelable.Creator *;
 }
--libraryjars src/main/jniLibs/*
+
+#kotlin
+-keep class kotlin.** { *; }
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+}
+-keepattributes *Annotation*
+-keep class org.jetbrains.** { *; }
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+}

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Weight2Activity">
+    tools:context=".WeightActivity">
 
     <View
         android:id="@+id/v_bt_status"

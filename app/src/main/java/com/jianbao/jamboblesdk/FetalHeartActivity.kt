@@ -1,11 +1,11 @@
 package com.jianbao.jamboblesdk
 
-import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.jianbao.fastble.JamBoBleHelper
+import com.jianbao.fastble.JamBoHelper
+import com.jianbao.fastble.data.BleDevice
 import com.jianbao.jamboble.BleState
 import com.jianbao.jamboble.callbacks.BleDataCallback
 import com.jianbao.jamboble.callbacks.IBleStatusCallback
@@ -28,7 +28,7 @@ class FetalHeartActivity : AppCompatActivity() {
          * 而是在 IBleStatusCallback#onBTDeviceFound 返回合适的设备 BluetoothDevice ，也可以通过 getBluetoothDevice 获取
          */
         mBtnOpenBle.setOnClickListener {
-            JamBoBleHelper.instance.scanFetalHeartDevice()
+//            JamBoBleHelper.instance.scanFetalHeartDevice()
         }
 
         mBtnConnectBle.setOnClickListener {
@@ -36,7 +36,7 @@ class FetalHeartActivity : AppCompatActivity() {
         }
 
         //数据回调
-        JamBoBleHelper.instance.setBleDataCallBack(
+        JamBoHelper.getInstance().setBleDataCallBack(
             object : BleDataCallback {
                 override fun onBTStateChanged(state: BleState) {
                     println("FetalHeartActivity.onBTStateChanged")
@@ -54,11 +54,11 @@ class FetalHeartActivity : AppCompatActivity() {
         )
 
         //蓝牙设备状态回调
-        JamBoBleHelper.instance.setBleStatusCallback(
+        JamBoHelper.getInstance().setBleStatusCallback(
             object : IBleStatusCallback {
-                override fun onBTDeviceFound(device: BluetoothDevice?) {
-                    println("device = [${device}]")
+                override fun onBTDeviceFound(device: List<BleDevice>?) {
                 }
+
 
                 override fun onNotification() {
 
@@ -69,7 +69,7 @@ class FetalHeartActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        JamBoBleHelper.instance.destroy()
+        JamBoHelper.getInstance().destroy()
         super.onDestroy()
     }
 
