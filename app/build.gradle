@@ -12,7 +12,9 @@ android {
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         versionCode 1
         versionName "1.0"
-
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -33,20 +35,19 @@ android {
 }
 
 dependencies {
-
-    implementation rootProject.ext.dependencies.appcompatx
-    implementation rootProject.ext.dependencies.core_ktx
+    implementation rootProject.ext.dependencies.appcompat
+    implementation rootProject.ext.dependencies.design_support
+    implementation rootProject.ext.dependencies.core
     implementation rootProject.ext.dependencies.logger
-    implementation rootProject.ext.dependencies.multidex
+    implementation rootProject.ext.dependencies.multidex_support
     implementation rootProject.ext.dependencies.gson
-    implementation rootProject.ext.dependencies.localbroadcastmanagerx
-    implementation rootProject.ext.dependencies.rxjava2
-    implementation rootProject.ext.dependencies.rxandroid2
-    implementation rootProject.ext.dependencies.recyclerviewx
-    implementation rootProject.ext.dependencies.recyclerviewx_selection
-    implementation rootProject.ext.dependencies.baserecyclerviewadapterhelper
     implementation rootProject.ext.dependencies.kotlin
     implementation rootProject.ext.dependencies.constraintlayout
-    implementation files('libs/jamboble_1.1.aar')
-    annotationProcessor rootProject.ext.dependencies.annotationx
+//    implementation rootProject.ext.dependencies.localbroadcastmanager
+    implementation rootProject.ext.dependencies.rxjava2
+    implementation rootProject.ext.dependencies.rxandroid2
+    implementation rootProject.ext.dependencies.recyclerview
+    implementation rootProject.ext.dependencies.baserecyclerviewadapterhelper
+    implementation project(path: ':library_jamboble')
+    annotationProcessor rootProject.ext.dependencies.annotation
 }
