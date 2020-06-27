@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.os.Environment
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import com.jianbao.jamboble.data.FetalHeartData
 import com.jianbao.jamboble.utils.IoUtils
@@ -15,11 +16,15 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-class FetalHeartConnector {
-    val FILE_DIR = Environment.getDownloadCacheDirectory().absolutePath + File.pathSeparator + ".audio"
+class FetalHeartConnector() {
+    val FILE_DIR =
+        Environment.getDownloadCacheDirectory().absolutePath + File.pathSeparator + ".audio"
 
     // 服务的回调接口
     private var mCallback: Callback? = null
@@ -45,18 +50,20 @@ class FetalHeartConnector {
      * 数据解析器回调接口
      */
     private var mLMTPDecoder: LMTPDecoder = LMTPDecoder()
-    private var mLMTPDListener: LMTPDListener = LMTPDListener(this)
-    private var mReadThread: ReadThread? = null
-    private var mConnectThread: ConnectThread? = null
+    private var mLMTPDListener: LMTPDListener? = LMTPDListener(this)
+    private var mReadTask: ReadTask? = null
+    private var mConnectTask: ConnectTask? = null
+    private var mNotifyHandler: NotifyHandler? = NotifyHandler(this)
 
-    private var mNotifyHandler: NotifyHandler = NotifyHandler(this)
+    private var mExecutors: ExecutorService? = Executors.newCachedThreadPool()
 
     companion object {
         val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
         const val CONNECT_SUCCESS = 1
         const val CONNECT_FAILED = 2
-        const val READ_DATA_SUCCESS = 3
-        const val READ_DATA_FAILED = 4
+        const val DISCONNECT = 3
+        const val READ_DATA_SUCCESS = 4
+        const val READ_DATA_FAILED = 5
         const val READ_INTERVAL = 30 //读取间隔
 
         /**
@@ -76,7 +83,7 @@ class FetalHeartConnector {
         val msg = Message()
         msg.what = MSG_NOTIFY_DATA
         msg.obj = data
-        mNotifyHandler.sendMessage(msg)
+        mNotifyHandler?.sendMessage(msg)
     }
 
 
@@ -102,10 +109,10 @@ class FetalHeartConnector {
      * 启动连接线程
      */
     fun start() {
-        if (mConnectThread == null) {
-            mConnectThread = ConnectThread(this)
+        if (mConnectTask == null) {
+            mConnectTask = ConnectTask(this)
         }
-        mConnectThread?.start()
+        mExecutors?.execute(mConnectTask!!)
         mLMTPDecoder.startWork()
     }
 
@@ -117,14 +124,15 @@ class FetalHeartConnector {
         isReading = false
         if (mBluetoothSocket != null) {
             try {
-                mBluetoothSocket!!.close()
+                mBluetoothSocket?.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
-        mConnectThread = null
-        mReadThread = null
+        mConnectTask = null
+        mReadTask = null
         mLMTPDecoder.stopWork()
+        mNotifyHandler?.sendEmptyMessage(DISCONNECT)
     }
 
     /**
@@ -197,14 +205,14 @@ class FetalHeartConnector {
         val msg = Message()
         msg.what = MSG_NOTIFY_STATUS
         msg.obj = status
-        mNotifyHandler.sendMessage(msg)
+        mNotifyHandler?.sendMessage(msg)
     }
 
     private fun nitifyData(data: FetalHeartData) {
         val msg = Message()
         msg.what = MSG_NOTIFY_DATA
         msg.obj = data
-        mNotifyHandler.sendMessage(msg)
+        mNotifyHandler?.sendMessage(msg)
     }
 
     /**
@@ -217,7 +225,16 @@ class FetalHeartConnector {
     }
 
     fun destroy() {
+        mExecutors?.shutdown()
+        mExecutors = null
+        mNotifyHandler?.destroy()
+        mNotifyHandler = null
+        mLMTPDListener?.destroy()
+        mLMTPDListener = null
+        mReadTask = null
+        mConnectTask = null
         mLMTPDecoder.release()
+        mBluetoothSocket?.close()
     }
 
     /**
@@ -272,6 +289,10 @@ class FetalHeartConnector {
             }
         }
 
+        fun destroy() {
+            mWeakReference.clear()
+        }
+
     }
 
     //=====================连接蓝牙线程========================
@@ -280,17 +301,19 @@ class FetalHeartConnector {
      *
      * @author 毛晓飞
      */
-    private class ConnectThread(connector: FetalHeartConnector) : Thread() {
+    private class ConnectTask(connector: FetalHeartConnector) : Runnable {
         private val mWeakReference = WeakReference(connector)
         private var tmp: BluetoothSocket? = null
         override fun run() {
+            if (Thread.interrupted()) {
+                mWeakReference.clear()
+                return
+            }
             mWeakReference.get()?.also {
                 //第一步，获取BluetoothSocket对象
                 try {
                     tmp =
-                        it.mBtDevice?.createInsecureRfcommSocketToServiceRecord(
-                            MY_UUID
-                        )
+                        it.mBtDevice?.createRfcommSocketToServiceRecord(MY_UUID)
                 } catch (e: IOException) {
                     it.notifyStatus(CONNECT_FAILED)
                 }
@@ -301,7 +324,7 @@ class FetalHeartConnector {
                 try {
                     it.mBluetoothSocket?.connect()
                     it.notifyStatus(CONNECT_SUCCESS)
-                    it.mNotifyHandler.sendEmptyMessage(MSG_CONNECT_FINISHED)
+                    it.mNotifyHandler?.sendEmptyMessage(MSG_CONNECT_FINISHED)
                 } catch (e: IOException) {
                     it.notifyStatus(CONNECT_FAILED)
                 } catch (e: Exception) {
@@ -320,7 +343,7 @@ class FetalHeartConnector {
         }
     }
 
-    class NotifyHandler(connector: FetalHeartConnector) : Handler() {
+    class NotifyHandler(connector: FetalHeartConnector) : Handler(Looper.getMainLooper()) {
         private val weakReference = WeakReference(connector)
 
         override fun handleMessage(msg: Message) {
@@ -329,20 +352,27 @@ class FetalHeartConnector {
                     MSG_CONNECT_FINISHED -> {
                         //开始同步数据
                         it.isReading = true
-                        it.mReadThread = ReadThread(it)
-                        it.mReadThread?.start()
+                        it.mReadTask = ReadTask(it)
+                        it.mExecutors?.execute(it.mReadTask!!)
                     }
-                    MSG_NOTIFY_STATUS -> if (it.mCallback != null) {
+                    MSG_NOTIFY_STATUS -> {
                         LogUtils.d("dispServiceStatus %s", (msg.obj as Int).toString())
                         it.mCallback?.dispServiceStatus(msg.obj as Int)
                     }
-                    MSG_NOTIFY_DATA -> if (it.mCallback != null) {
+                    MSG_NOTIFY_DATA -> {
                         it.mCallback?.dispInfor(msg.obj as FetalHeartData)
+                    }
+                    DISCONNECT -> {
+                        it.mCallback?.dispServiceStatus(msg.what)
                     }
                     else -> {
                     }
                 }
             }
+        }
+
+        fun destroy() {
+            weakReference.clear()
         }
     }
 
@@ -351,49 +381,53 @@ class FetalHeartConnector {
      * 读取蓝牙数据线程
      *
      */
-    private class ReadThread(connector: FetalHeartConnector) : Thread() {
-        private val weakReference = WeakReference(connector)
+    private class ReadTask(connector: FetalHeartConnector) : Runnable {
+        private val mWeakReference = WeakReference(connector)
         private var mInputStream: InputStream? = null
         override fun run() {
-            weakReference.get()?.also { service ->
+            if (Thread.interrupted()) {
+                mWeakReference.clear()
+                return
+            }
+            mWeakReference.get()?.also { connector ->
                 try {
                     //第一步，获取输入流
-                    mInputStream = service.mBluetoothSocket?.inputStream
-                    service.notifyStatus(READ_DATA_SUCCESS)
+                    mInputStream = connector.mBluetoothSocket?.inputStream
+                    connector.notifyStatus(READ_DATA_SUCCESS)
 
                     //第二步，每30毫秒读取一次数据
                     var len: Int
                     val buffer = ByteArray(2048)
-                    while (service.isReading) {
+                    while (connector.isReading) {
                         try {
                             len = mInputStream?.read(buffer)!!
                             //将数据设置到胎心仪解析器
-                            service.mLMTPDecoder.putData(buffer, 0, len)
+                            connector.mLMTPDecoder.putData(buffer, 0, len)
                             try {
                                 sleep(READ_INTERVAL.toLong())
                             } catch (e: InterruptedException) {
                                 e.printStackTrace()
                             }
                         } catch (e: IOException) {
-                            service.notifyStatus(READ_DATA_FAILED)
-                            service.isReading = false
+                            connector.notifyStatus(READ_DATA_FAILED)
+                            connector.isReading = false
                         }
                     }
                 } catch (e: IOException) {
-                    service.notifyStatus(READ_DATA_FAILED)
-                    service.isReading = false
+                    connector.notifyStatus(READ_DATA_FAILED)
+                    connector.isReading = false
                 } finally {
                     if (mInputStream != null) {
                         IoUtils.closeSilently(mInputStream)
                     }
                     //关闭蓝牙套接字
-                    if (service.mBluetoothSocket != null) {
-                        IoUtils.closeSilently(service.mBluetoothSocket)
+                    if (connector.mBluetoothSocket != null) {
+                        IoUtils.closeSilently(connector.mBluetoothSocket)
                     }
                 }
             }
-
         }
+
     }
 
     /**

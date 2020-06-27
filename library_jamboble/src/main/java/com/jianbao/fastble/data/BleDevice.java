@@ -12,6 +12,7 @@ public class BleDevice implements Parcelable {
     private byte[] mScanRecord;
     private int mRssi;
     private long mTimestampNanos;
+    private boolean connected = false;
 
     public BleDevice(BluetoothDevice device) {
         mDevice = device;
@@ -29,6 +30,7 @@ public class BleDevice implements Parcelable {
         mScanRecord = in.createByteArray();
         mRssi = in.readInt();
         mTimestampNanos = in.readLong();
+        connected = in.readByte() != 0;
     }
 
     @Override
@@ -37,6 +39,7 @@ public class BleDevice implements Parcelable {
         dest.writeByteArray(mScanRecord);
         dest.writeInt(mRssi);
         dest.writeLong(mTimestampNanos);
+        dest.writeByte((byte) (connected ? 1 : 0));
     }
 
     @Override
@@ -106,4 +109,11 @@ public class BleDevice implements Parcelable {
         this.mTimestampNanos = timestampNanos;
     }
 
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
 }

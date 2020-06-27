@@ -115,14 +115,6 @@ public class JamBoHelper {
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build();
-    static BleScanRuleConfig fetalHeartBleScanRuleConfig = new BleScanRuleConfig.Builder()
-            .setDeviceName(
-                    true,
-                    "iFM", "LCiFM"
-            ) // 只扫描指定广播名的设备，可选
-            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
-            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
-            .build();
 
     public static JamBoHelper getInstance() {
         return SingleTon.instance;
@@ -212,12 +204,11 @@ public class JamBoHelper {
 //        scan(BTDeviceSupport.DeviceType.SLEEPLIGHT);
 //    }
 
-    //    public void scanFetalHeartDevice() {
-//        BleManager.getInstance().initScanRule(fetalHeartBleScanRuleConfig);
-//        scan(BTDeviceSupport.DeviceType.FETAL_HEART);
-//    }
-
     private void scan(BTDeviceSupport.DeviceType type) {
+        if (!BleManager.getInstance().isBlueEnable()) {
+            showToast("请先打开蓝牙");
+            return;
+        }
         mJamboBleScanCallback.setDeviceType(type);
         BleManager.getInstance().scan(mJamboBleScanCallback);
     }
@@ -378,8 +369,6 @@ public class JamBoHelper {
                         break;
                     case SLEEPLIGHT:
                         break;
-                    case FETAL_HEART:
-                        break;
                     default:
                         break;
                 }
@@ -407,7 +396,7 @@ public class JamBoHelper {
         @Override
         public void onStartConnect() {
             BleManager.getInstance().cancelScan();
-            mJamBoHelperWeakReference.get().onBTStateChanged(BleState.CONNECTEING);
+            mJamBoHelperWeakReference.get().onBTStateChanged(BleState.CONNECTING);
         }
 
         @Override

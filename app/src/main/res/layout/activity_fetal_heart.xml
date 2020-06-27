@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -47,7 +46,7 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/v_bt_status"
         app:layout_constraintVertical_bias="0" />
@@ -99,6 +98,38 @@
         app:layout_constraintStart_toStartOf="@id/v_bt_data"
         app:layout_constraintTop_toBottomOf="@id/tv_data_title" />
 
+
+    <TextView
+        android:id="@+id/tv_devices_list_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="设备列表"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@id/rv_ble"
+        app:layout_constraintEnd_toEndOf="@id/v_bt_data"
+        app:layout_constraintStart_toStartOf="@id/v_bt_data"
+        app:layout_constraintTop_toBottomOf="@id/v_bt_data" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_ble"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        app:layout_constraintBottom_toTopOf="@id/btn_open_ble"
+        app:layout_constraintTop_toBottomOf="@id/tv_devices_list_title"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_devices" />
+
+    <ProgressBar
+        android:id="@+id/pb_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/rv_ble"
+        app:layout_constraintEnd_toEndOf="@id/rv_ble"
+        app:layout_constraintStart_toStartOf="@id/rv_ble"
+        app:layout_constraintTop_toTopOf="@id/rv_ble" />
+
     <Button
         android:id="@+id/btn_open_ble"
         android:layout_width="wrap_content"
@@ -107,19 +138,8 @@
         android:text="开始扫描"
         android:textColor="#fff"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btn_connect_ble"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/v_bt_data" />
-
-    <Button
-        android:id="@+id/btn_connect_ble"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:text="连接设备"
-        android:textColor="#fff"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btn_open_ble"
-        app:layout_constraintTop_toBottomOf="@id/v_bt_data" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rv_ble" />
+
 </android.support.constraint.ConstraintLayout>

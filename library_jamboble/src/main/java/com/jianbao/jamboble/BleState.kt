@@ -6,7 +6,7 @@ enum class BleState {
     SCAN_STOP,
     CONNECTED,
     CONNECT_FAILED,
-    CONNECTEING,
+    CONNECTING,
     DISCONNECT,
     TIMEOUT
 }
