@@ -1,6 +1,6 @@
-package com.jianbao.jamboble
+package com.jianbao.jamboble;
 
-enum class BleState {
+public enum BleState {
     NOT_FOUND,
     SCAN_START,
     SCAN_STOP,
