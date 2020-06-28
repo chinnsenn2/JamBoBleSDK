@@ -150,6 +150,22 @@ public class FetalHeartActivity extends AppCompatActivity {
             @Override
             public void onBTDataReceived(@Nullable BTData data) {
                 mTvValueRealtime.setText(data.toString());
+                //胎心率 FetalHeartData#fhr1
+                /*
+                 * int fhr1 胎心率 没有时为0 ， 范围 50 － 210 bmp
+                 * int fhr2 胎心率 没有时为0 ， 范围 50 － 210 bmp
+                 * byte toco 宫缩压力           范围 0  — 100
+                 * byte afm 自动胎动曲线        范围 0 － 40
+                 * byte fhrSignal  胎心信号质量        范围 0 － 3
+                 * byte afmFlag 是否监测到自动胎动 范围 0（没有）－ 1（一次自动胎动）
+                 * byte fmFlag 手动胎动标记   范围 0（没有）－ 1（记一次手动胎动）
+                 * byte tocoFlag 宫缩复位标记 范围 0（没有）－ 1（记一次宫缩复位）
+                 * byte devicePower 电池电量           范围 0  — 4
+                 * byte isHaveFhr1 = 数据包是否包含rate参数  范围 0（不包含） － 1（包含）
+                 * byte isHaveFhr2 数据包是否包含rate2参数 范围 0（不包含） － 1（包含）
+                 * byte isHaveToco 数据包是否包含TOCO参数  范围 0（不包含） － 1（包含）
+                 * byte isHaveAfm 数据包是否包含AFM参数   范围 0（不包含） － 1（包含）
+                 */
             }
 
             @Override
