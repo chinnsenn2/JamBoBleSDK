@@ -29,7 +29,6 @@ public class FetalHeartActivity extends AppCompatActivity {
     private Button mBtnOpenBle;
     private DevicesAdapter devicesAdapter;
     private RecyclerView mRvBle;
-    private BleDevice mBleDevice;
     private ProgressBar mPbLoading;
 
     @Override
@@ -48,11 +47,25 @@ public class FetalHeartActivity extends AppCompatActivity {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if (view.getId() == R.id.btn_connect) {
-                    mBleDevice = (BleDevice) adapter.getData().get(position);
-                    if (mBleDevice.isConnected()) {
+                    BleDevice device = (BleDevice) adapter.getData().get(position);
+                    if (device.isConnected()) {
+                        //断开连接
                         FetalHeartHelper.getInstance().disconnect();
                     } else {
-                        FetalHeartHelper.getInstance().connectDevice(mBleDevice);
+                        //连接设备
+                        FetalHeartHelper.getInstance().connectDevice(device);
+                    }
+                } else if (view.getId() == R.id.btn_record) {
+                    //获取录制状态
+                    if (FetalHeartHelper.getInstance().getRecordStatus()) {
+                        ((Button) view).setText("开始录制");
+                        //结束录制
+                        FetalHeartHelper.getInstance().finishRecord();
+                    } else {
+                        ((Button) view).setText("停止录制");
+                        //录音,返回录音文件路径
+                        String recordPath = FetalHeartHelper.getInstance().startRecord();
+                        System.out.println(recordPath);
                     }
                 }
             }
@@ -103,7 +116,7 @@ public class FetalHeartActivity extends AppCompatActivity {
                     //连接成功
                     case CONNECTED:
                         mTvStatus.setText("连接设备成功");
-                        mBleDevice.setConnected(true);
+                        FetalHeartHelper.getInstance().getConnectedDevice().setConnected(true);
                         devicesAdapter.notifyDataSetChanged();
                         break;
                     //长时间未搜索到设备
@@ -117,9 +130,7 @@ public class FetalHeartActivity extends AppCompatActivity {
                         break;
                     case DISCONNECT:
                         mTvStatus.setText("断开连接");
-                        mBleDevice.setConnected(false);
                         devicesAdapter.notifyDataSetChanged();
-                        mBleDevice = null;
                         break;
                     case CONNECT_FAILED:
                         mTvStatus.setText("连接失败");
@@ -154,7 +165,9 @@ public class FetalHeartActivity extends AppCompatActivity {
         protected void convert(BaseViewHolder helper, BleDevice item) {
             helper.setText(R.id.tv_device_name, item.getName() + "\n" + item.getMac());
             helper.setText(R.id.btn_connect, item.isConnected() ? "断开连接" : "连接设备");
+            helper.setGone(R.id.btn_record, item.isConnected());
             helper.addOnClickListener(R.id.btn_connect);
+            helper.addOnClickListener(R.id.btn_record);
         }
 
         public void updateList(List<BleDevice> list) {

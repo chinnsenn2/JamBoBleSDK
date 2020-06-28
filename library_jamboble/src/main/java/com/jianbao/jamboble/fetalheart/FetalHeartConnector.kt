@@ -6,6 +6,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.jianbao.fastble.BleManager
 import com.jianbao.jamboble.data.FetalHeartData
 import com.jianbao.jamboble.utils.IoUtils
 import com.jianbao.jamboble.utils.LogUtils
@@ -22,9 +23,8 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class FetalHeartConnector() {
-    val FILE_DIR =
-        Environment.getDownloadCacheDirectory().absolutePath + File.pathSeparator + ".audio"
+class FetalHeartConnector {
+    val FILE_DIR = BleManager.getInstance().context.externalCacheDir?.absolutePath + File.separator + "audio"
 
     // 服务的回调接口
     private var mCallback: Callback? = null
@@ -140,10 +140,20 @@ class FetalHeartConnector() {
      */
     fun recordStart(): String? {
         val path: File = getRecordFilePath()
-        val fname = "" + System.currentTimeMillis()
-        mLMTPDecoder.beginRecordWave(path, fname)
-        isRecord = true
-        return "$path${File.pathSeparator}$fname.wav" //固定此格式
+        val fName = Calendar.getInstance().let {
+            "${it.get(Calendar.YEAR)}_${it.get(Calendar.MONTH) + 1}_${it.get(Calendar.DAY_OF_MONTH)}_${System.currentTimeMillis()}"
+        }
+//        val fName = "" + System.currentTimeMillis()
+        val file = File(path,"$fName.wav")
+        try {
+            file.createNewFile()
+            mLMTPDecoder.beginRecordWave(path, fName)
+            isRecord = true
+            return file.absolutePath //固定此格式
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     fun getRecordFilePath(): File {
@@ -213,15 +223,6 @@ class FetalHeartConnector() {
         msg.what = MSG_NOTIFY_DATA
         msg.obj = data
         mNotifyHandler?.sendMessage(msg)
-    }
-
-    /**
-     * 获取工作状态
-     *
-     * @return
-     */
-    fun getReadingStatus(): Boolean {
-        return isReading
     }
 
     fun destroy() {
