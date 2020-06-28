@@ -35,6 +35,9 @@ public <methods>;
 
 }
 -keep class com.jianbao.fastble.JamBoHelper
+
+-keep class com.jianbao.jamboble.fetalheart.FetalHeartHelper
+
 -keep class com.jianbao.fastble.*.* {
 public <fields>;
 public <methods>;

@@ -2,13 +2,11 @@ package com.jianbao.jamboble.fetalheart
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.jianbao.fastble.BleManager
 import com.jianbao.jamboble.data.FetalHeartData
-import com.jianbao.jamboble.utils.IoUtils
 import com.jianbao.jamboble.utils.LogUtils
 import com.luckcome.lmtpdecorder.LMTPDecoder
 import com.luckcome.lmtpdecorder.LMTPDecoderListener
@@ -24,7 +22,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class FetalHeartConnector {
-    val FILE_DIR = BleManager.getInstance().context.externalCacheDir?.absolutePath + File.separator + "audio"
+    val FILE_DIR =
+        BleManager.getInstance().context.externalCacheDir?.absolutePath + File.separator + "audio"
 
     // 服务的回调接口
     private var mCallback: Callback? = null
@@ -122,6 +121,9 @@ class FetalHeartConnector {
      */
     fun cancel() {
         isReading = false
+        mConnectTask = null
+        mReadTask = null
+        mLMTPDecoder.stopWork()
         if (mBluetoothSocket != null) {
             try {
                 mBluetoothSocket?.close()
@@ -129,9 +131,6 @@ class FetalHeartConnector {
                 e.printStackTrace()
             }
         }
-        mConnectTask = null
-        mReadTask = null
-        mLMTPDecoder.stopWork()
         mNotifyHandler?.sendEmptyMessage(DISCONNECT)
     }
 
@@ -144,7 +143,7 @@ class FetalHeartConnector {
             "${it.get(Calendar.YEAR)}_${it.get(Calendar.MONTH) + 1}_${it.get(Calendar.DAY_OF_MONTH)}_${System.currentTimeMillis()}"
         }
 //        val fName = "" + System.currentTimeMillis()
-        val file = File(path,"$fName.wav")
+        val file = File(path, "$fName.wav")
         try {
             file.createNewFile()
             mLMTPDecoder.beginRecordWave(path, fName)
@@ -316,6 +315,7 @@ class FetalHeartConnector {
                     tmp =
                         it.mBtDevice?.createRfcommSocketToServiceRecord(MY_UUID)
                 } catch (e: IOException) {
+                    print(e.message)
                     it.notifyStatus(CONNECT_FAILED)
                 }
                 it.mBluetoothSocket = tmp
@@ -327,8 +327,10 @@ class FetalHeartConnector {
                     it.notifyStatus(CONNECT_SUCCESS)
                     it.mNotifyHandler?.sendEmptyMessage(MSG_CONNECT_FINISHED)
                 } catch (e: IOException) {
+                    println(e.message)
                     it.notifyStatus(CONNECT_FAILED)
                 } catch (e: Exception) {
+                    print(e.message)
                     it.notifyStatus(CONNECT_FAILED)
                 }
 
@@ -418,13 +420,15 @@ class FetalHeartConnector {
                     connector.notifyStatus(READ_DATA_FAILED)
                     connector.isReading = false
                 } finally {
-                    if (mInputStream != null) {
-                        IoUtils.closeSilently(mInputStream)
-                    }
+                    connector.mBluetoothSocket?.close()
+                    mInputStream?.close()
+//                    if (mInputStream != null) {
+//                        IoUtils.closeSilently(mInputStream)
+//                    }
                     //关闭蓝牙套接字
-                    if (connector.mBluetoothSocket != null) {
-                        IoUtils.closeSilently(connector.mBluetoothSocket)
-                    }
+//                    if (connector.mBluetoothSocket != null) {
+//                        IoUtils.closeSilently(connector.mBluetoothSocket)
+//                    }
                 }
             }
         }

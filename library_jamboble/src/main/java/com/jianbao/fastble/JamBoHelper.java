@@ -1,8 +1,10 @@
 package com.jianbao.fastble;
 
 import android.app.Application;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -207,13 +209,25 @@ public class JamBoHelper {
     private void scan(BTDeviceSupport.DeviceType type) {
         if (!BleManager.getInstance().isBlueEnable()) {
             showToast("请先打开蓝牙");
+            requestEnableBle();
             return;
         }
         mJamboBleScanCallback.setDeviceType(type);
         BleManager.getInstance().scan(mJamboBleScanCallback);
     }
 
+    private void requestEnableBle() {
+        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        BleManager.getInstance().getContext().startActivity(intent);
+    }
+
     public void stopScan() {
+        if (!BleManager.getInstance().isBlueEnable()) {
+            showToast("请先打开蓝牙");
+            requestEnableBle();
+            return;
+        }
         BleManager.getInstance().cancelScan();
     }
 

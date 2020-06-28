@@ -43,6 +43,7 @@ public class FetalHeartActivity extends AppCompatActivity {
         mPbLoading = findViewById(R.id.pb_loading);
 
         devicesAdapter = new DevicesAdapter();
+        devicesAdapter.setHasStableIds(true);
         devicesAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
@@ -79,6 +80,8 @@ public class FetalHeartActivity extends AppCompatActivity {
             public void onClick(View v) {
                 switch (mBtnOpenBle.getText().toString()) {
                     case "开始扫描":
+                        devicesAdapter.getData().clear();
+                        devicesAdapter.notifyDataSetChanged();
                         FetalHeartHelper.getInstance().scanFetalHeartDevice();
                         break;
                     case "停止扫描":
@@ -91,7 +94,7 @@ public class FetalHeartActivity extends AppCompatActivity {
         FetalHeartHelper.getInstance().setFetalHeartBleCallback(new FetalHeartBleCallback() {
             @Override
             public void onBTDeviceFound(List<BleDevice> list) {
-                devicesAdapter.updateList(list);
+
             }
 
             @Override
@@ -116,7 +119,6 @@ public class FetalHeartActivity extends AppCompatActivity {
                     //连接成功
                     case CONNECTED:
                         mTvStatus.setText("连接设备成功");
-                        FetalHeartHelper.getInstance().getConnectedDevice().setConnected(true);
                         devicesAdapter.notifyDataSetChanged();
                         break;
                     //长时间未搜索到设备
@@ -136,6 +138,7 @@ public class FetalHeartActivity extends AppCompatActivity {
                         mTvStatus.setText("连接失败");
                         break;
                     case SCAN_STOP:
+                        mPbLoading.setVisibility(View.GONE);
                         mTvStatus.setText("已停止扫描");
                         mBtnOpenBle.setText("开始扫描");
                         break;
@@ -163,6 +166,7 @@ public class FetalHeartActivity extends AppCompatActivity {
 
         @Override
         protected void convert(BaseViewHolder helper, BleDevice item) {
+            item.setConnected(item.equals(FetalHeartHelper.getInstance().getConnectedDevice()));
             helper.setText(R.id.tv_device_name, item.getName() + "\n" + item.getMac());
             helper.setText(R.id.btn_connect, item.isConnected() ? "断开连接" : "连接设备");
             helper.setGone(R.id.btn_record, item.isConnected());
