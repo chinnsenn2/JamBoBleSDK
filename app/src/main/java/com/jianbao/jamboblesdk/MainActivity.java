@@ -45,16 +45,17 @@ public class MainActivity extends AppCompatActivity {
         mRvBle.setAdapter(measureAdapter);
         List<MeasureBean> list = new ArrayList<>();
         list.add(new MeasureBean(0, "体脂测量"));
-        list.add(new MeasureBean(0, "血压、血糖、尿酸测量"));
-        list.add(new MeasureBean(0, "血氧测量"));
-        list.add(new MeasureBean(0, "血液三合一测量"));
-//        list.add(new MeasureBean(0, "睡眠灯"));
-//        list.add(new MeasureBean(0, "胎心"));
+        list.add(new MeasureBean(1, "血压、血糖、尿酸测量"));
+        list.add(new MeasureBean(2, "血氧测量"));
+        list.add(new MeasureBean(3, "血液三合一测量"));
+//        list.add(new MeasureBean(4, "睡眠灯"));
+        list.add(new MeasureBean(5, "胎心"));
         measureAdapter.update(list);
         measureAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                switch (position) {
+                MeasureBean bean = (MeasureBean) adapter.getData().get(position);
+                switch (bean.getType()) {
                     case 0:
                         startActivity(new Intent(MainActivity.this, WeightActivity.class));
                         break;
@@ -91,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
         List<String> permissions = new ArrayList<>();
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
 
         List<String> permissionDeniedList = new ArrayList<>();
         for (String permission : permissions) {
@@ -141,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkGPSIsOpen() {
         LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        return manager != null && manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
     @Override
@@ -154,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    static class MeasureBean {
+    private static class MeasureBean {
         private int type;
         private String name;
 

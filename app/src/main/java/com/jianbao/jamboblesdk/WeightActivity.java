@@ -83,7 +83,7 @@ public class WeightActivity extends AppCompatActivity {
                         mBtnOpenBle.setText("开始扫描");
                         mTvStatus.setText("超时");
                         break;
-                    case CONNECTEING:
+                    case CONNECTING:
                         mBtnOpenBle.setText("开始扫描");
                         mTvStatus.setText("连接中");
                         break;
