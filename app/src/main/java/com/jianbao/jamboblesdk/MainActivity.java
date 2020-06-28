@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         if (permissionDeniedList.size() > 0) {
             ActivityCompat.requestPermissions(
                     this,
-                    (String[]) permissionDeniedList.toArray(new String[0]),
+                    permissionDeniedList.toArray(new String[0]),
                     REQUEST_CODE_PERMISSION_LOCATION
             );
         }

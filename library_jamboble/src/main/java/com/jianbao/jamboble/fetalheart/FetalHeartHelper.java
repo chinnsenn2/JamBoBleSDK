@@ -21,29 +21,7 @@ import static com.jianbao.jamboble.fetalheart.FetalHeartConnector.CONNECT_SUCCES
 import static com.jianbao.jamboble.fetalheart.FetalHeartConnector.DISCONNECT;
 
 public class FetalHeartHelper {
-
     private FetalHeartHelper() {
-        mFetalHeartConnector = new FetalHeartConnector();
-        mFetalHeartConnector.setCallback(new FetalHeartConnector.Callback() {
-            @Override
-            public void dispInfor(@Nullable FetalHeartData data) {
-                mFetalHeartBleCallback.onBTDataReceived(data);
-            }
-
-            @Override
-            public void dispServiceStatus(int status) {
-                if (status == CONNECT_SUCCESS) {
-                    mFetalHeartBleCallback.onBTStateChanged(BleState.CONNECTED);
-                } else if (status == FetalHeartConnector.CONNECT_FAILED || status == FetalHeartConnector.READ_DATA_FAILED) {
-                    mFetalHeartBleCallback.onBTStateChanged(BleState.CONNECT_FAILED);
-                    setBleDevice(null);
-                } else if (status == DISCONNECT) {
-                    mBleDevice.setConnected(false);
-                    setBleDevice(null);
-                    mFetalHeartBleCallback.onBTStateChanged(BleState.DISCONNECT);
-                }
-            }
-        });
         mFetalHeartBleScanCallback = new FetalHeartBleScanCallback(this);
     }
 
@@ -76,7 +54,6 @@ public class FetalHeartHelper {
         if (!BleManager.getInstance().isBlueEnable()) {
             showToast("请先打开蓝牙");
             requestEnableBle();
-//            BleManager.getInstance().enableBluetooth();
             return;
         }
         BleManager.getInstance().initScanRule(fetalHeartBleScanRuleConfig);
@@ -96,7 +73,6 @@ public class FetalHeartHelper {
         if (!BleManager.getInstance().isBlueEnable()) {
             showToast("请先打开蓝牙");
             requestEnableBle();
-//            BleManager.getInstance().enableBluetooth();
             return;
         }
         BleManager.getInstance().cancelScan();
@@ -124,12 +100,16 @@ public class FetalHeartHelper {
         if (!BleManager.getInstance().isBlueEnable()) {
             showToast("请先打开蓝牙");
             requestEnableBle();
-//            BleManager.getInstance().enableBluetooth();
             return;
         }
         if (this.mBleDevice != null) {
             showToast("请先断开连接的设备");
             return;
+        }
+        if (mFetalHeartConnector == null) {
+            mFetalHeartConnector = new FetalHeartConnector();
+            FetalCallback fetalCallback = new FetalCallback(this);
+            mFetalHeartConnector.setCallback(fetalCallback);
         }
         this.mBleDevice = device;
         mFetalHeartConnector.setBluetoothDevice(device.getDevice());
@@ -158,10 +138,11 @@ public class FetalHeartHelper {
 
     /**
      * 启动录制功能
+     *
      * @return 录制音频的路径
      */
     public String startRecord() {
-       return mFetalHeartConnector.recordStart();
+        return mFetalHeartConnector.recordStart();
     }
 
     /**
@@ -178,6 +159,7 @@ public class FetalHeartHelper {
 
     /**
      * 设置宫缩复位
+     *
      * @param value 宫缩复位的值
      */
     public void setTocoReset(int value) {
@@ -186,6 +168,7 @@ public class FetalHeartHelper {
 
     /**
      * 设置胎心音量
+     *
      * @param value 音量大小的值
      */
     public void setFhrVolume(int value) {
@@ -196,7 +179,6 @@ public class FetalHeartHelper {
      * 释放资源
      */
     public void destroy() {
-        mFetalHeartBleScanCallback = null;
         mFetalHeartBleCallback = null;
         mBleDevice = null;
         if (mFetalHeartConnector != null) {
@@ -227,6 +209,36 @@ public class FetalHeartHelper {
         @Override
         public void onScanning(BleDevice bleDevice) {
             mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTDeviceScanning(bleDevice);
+        }
+    }
+
+    private static class FetalCallback implements FetalHeartConnector.Callback {
+        private WeakReference<FetalHeartHelper> weakReference;
+
+        public FetalCallback(FetalHeartHelper fetalHeartHelper) {
+            this.weakReference = new WeakReference<>(fetalHeartHelper);
+        }
+
+        @Override
+        public void dispInfor(@Nullable FetalHeartData data) {
+            if (weakReference.get() != null) {
+                weakReference.get().mFetalHeartBleCallback.onBTDataReceived(data);
+            }
+        }
+
+        @Override
+        public void dispServiceStatus(int status) {
+            if (weakReference.get() != null) {
+                if (status == CONNECT_SUCCESS) {
+                    weakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.CONNECTED);
+                } else if (status == FetalHeartConnector.CONNECT_FAILED || status == FetalHeartConnector.READ_DATA_FAILED) {
+                    weakReference.get().setBleDevice(null);
+                    weakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.CONNECT_FAILED);
+                } else if (status == DISCONNECT) {
+                    weakReference.get().setBleDevice(null);
+                    weakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.DISCONNECT);
+                }
+            }
         }
     }
 }
