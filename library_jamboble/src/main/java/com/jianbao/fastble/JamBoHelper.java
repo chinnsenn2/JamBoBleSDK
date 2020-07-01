@@ -3,6 +3,9 @@ package com.jianbao.fastble;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
@@ -11,11 +14,13 @@ import android.widget.Toast;
 import com.jianbao.fastble.callback.BleGattCallback;
 import com.jianbao.fastble.callback.BleNotifyCallback;
 import com.jianbao.fastble.callback.BleScanCallback;
+import com.jianbao.fastble.callback.BleWriteCallback;
 import com.jianbao.fastble.data.BleDevice;
 import com.jianbao.fastble.exception.BleException;
 import com.jianbao.fastble.scan.BleScanRuleConfig;
 import com.jianbao.jamboble.BleState;
 import com.jianbao.jamboble.BuildConfig;
+import com.jianbao.jamboble.SampleGattAttributes;
 import com.jianbao.jamboble.callbacks.BleDataCallback;
 import com.jianbao.jamboble.callbacks.IBleStatusCallback;
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack;
@@ -25,6 +30,8 @@ import com.jianbao.jamboble.data.QnUser;
 import com.jianbao.jamboble.data.UricAcidData;
 import com.jianbao.jamboble.device.BTDevice;
 import com.jianbao.jamboble.device.BTDeviceSupport;
+import com.jianbao.jamboble.device.OnCallBloodSugar;
+import com.jianbao.jamboble.device.SannuoAnWenBloodSugar;
 import com.jianbao.jamboble.device.oximeter.OxiMeterHelper;
 import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 import com.jianbao.jamboble.fatscale.JamboQnHelper;
@@ -37,6 +44,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.UUID;
 
 public class JamBoHelper {
 
@@ -277,37 +285,36 @@ public class JamBoHelper {
 
     public void onBTDataReceived(@Nullable BTData btData) {
         if (btData != null) {
-            String lastTime;
             if (btData instanceof UricAcidData) {
-                lastTime = ((UricAcidData) btData).mYear
+                String lastTime = ((UricAcidData) btData).mYear
                         + String.valueOf(((UricAcidData) btData).mMonth)
                         + ((UricAcidData) btData).mday
                         + ((UricAcidData) btData).mHour
                         + ((UricAcidData) btData).mMinute
                         + ((UricAcidData) btData).mUricAcid;
-            } else if (btData instanceof CholestenoneData)
-                lastTime = ((CholestenoneData) btData).mYear
+                if (!TextUtils.equals(lastTime, this.mLastDataFlag)) {
+                    if (this.mDataCallback != null) {
+                        this.mDataCallback.onBTDataReceived(btData);
+                    }
+                    this.mLastDataFlag = lastTime;
+                }
+            } else if (btData instanceof CholestenoneData) {
+                String lastTime = ((CholestenoneData) btData).mYear
                         + String.valueOf(((CholestenoneData) btData).mMonth)
                         + ((CholestenoneData) btData).mday
                         + ((CholestenoneData) btData).mHour
                         + ((CholestenoneData) btData).mMinute
                         + ((CholestenoneData) btData).cholestenone;
-            else {
-                lastTime = null;
-            }
-
-            if (TextUtils.isEmpty(lastTime)) {
+                if (!TextUtils.equals(lastTime, this.mLastDataFlag)) {
+                    if (this.mDataCallback != null) {
+                        this.mDataCallback.onBTDataReceived(btData);
+                    }
+                    this.mLastDataFlag = lastTime;
+                }
+            } else {
                 if (mDataCallback != null) {
                     mDataCallback.onBTDataReceived(btData);
                 }
-            } else {
-                if (TextUtils.equals(lastTime, this.mLastDataFlag)) {
-                    return;
-                }
-                if (this.mDataCallback != null) {
-                    this.mDataCallback.onBTDataReceived(btData);
-                }
-                this.mLastDataFlag = lastTime;
             }
         }
 
@@ -457,9 +464,45 @@ public class JamBoHelper {
                                     }
                                 }
                             });
+
+                    //不需要发送命令，配置写特征即可
+                    if (mBtDevice.needWriteCommand()) {
+                        if (mBtDevice instanceof SannuoAnWenBloodSugar) {
+                            List<BluetoothGattService> services = gatt.getServices();
+                            for (BluetoothGattService service : services) {
+                                List<BluetoothGattCharacteristic> gattCharacteristics = service.getCharacteristics();
+                                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                                    String uuid = gattCharacteristic.getUuid().toString();
+                                    if (uuid.equalsIgnoreCase(mBtDevice.writeCharacterUUID)) {// 血压测量特征UUID
+                                        if (mBtDevice.needCheckProperties()) {
+                                            final int charaProp = gattCharacteristic.getProperties();
+                                            boolean property_write = (charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) > 0
+                                                    | (charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0;
+                                            if (!property_write) {
+                                                break;
+                                            }
+                                        }
+                                        dealDescriptorWrite(gatt, mBtDevice, gattCharacteristic, true);
+                                        break;
+                                    }
+                                }
+                            }
+                        } else if (mBtDevice instanceof OnCallBloodSugar) {
+                            BleManager.getInstance().write(bleDevice, mBtDevice.serviceUUID, mBtDevice.writeCharacterUUID, ((OnCallBloodSugar) mBtDevice).getStartCommand(), new BleWriteCallback() {
+                                @Override
+                                public void onWriteSuccess(int current, int total, byte[] justWrite) {
+
+                                }
+
+                                @Override
+                                public void onWriteFailure(BleException exception) {
+
+                                }
+                            });
+                        }
+                    }
                 }
             }
-
 
         }
 
@@ -470,6 +513,21 @@ public class JamBoHelper {
             if (helper != null) {
                 helper.setBtDevice(null);
                 helper.onBTStateChanged(BleState.DISCONNECT);
+            }
+        }
+
+
+        private void dealDescriptorWrite(BluetoothGatt gatt, BTDevice btDevice, BluetoothGattCharacteristic characteristic, boolean enable) {
+            gatt.setCharacteristicNotification(characteristic, enable);
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            if (descriptor != null) {
+                if (enable) {
+                    descriptor.setValue(btDevice.getDescriptorEnabledValue());
+                } else {
+                    descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                }
+                gatt.writeDescriptor(descriptor);
             }
         }
     }

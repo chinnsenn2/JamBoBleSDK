@@ -103,7 +103,7 @@ public class BTDeviceSupport {
         device.setBTDeviceID(5);
         mBloodPressureDevice.put(device.deviceName, device);
 
-        device = new PanGaoBloodPressure();
+        device = new  PanGaoBloodPressure();
         device.setBTDeviceID(6);
         mBloodPressureDevice.put(device.deviceName, device);
 
