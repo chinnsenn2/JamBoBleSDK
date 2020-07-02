@@ -24,9 +24,6 @@
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true">
         <service
-            android:name="com.jianbao.jamboble.BluetoothLeService"
-            android:exported="false" />
-        <service
             android:name="com.qingniu.qnble.scanner.BleScanService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             tools:ignore="Instantiatable" />

@@ -3,9 +3,6 @@ package com.jianbao.fastble;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
@@ -20,7 +17,6 @@ import com.jianbao.fastble.exception.BleException;
 import com.jianbao.fastble.scan.BleScanRuleConfig;
 import com.jianbao.jamboble.BleState;
 import com.jianbao.jamboble.BuildConfig;
-import com.jianbao.jamboble.SampleGattAttributes;
 import com.jianbao.jamboble.callbacks.BleDataCallback;
 import com.jianbao.jamboble.callbacks.IBleStatusCallback;
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack;
@@ -44,7 +40,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.UUID;
 
 public class JamBoHelper {
 
@@ -437,9 +432,12 @@ public class JamBoHelper {
                 this.setBleDevice(bleDevice);
                 if (mBtDevice != null) {
                     helper.setBtDevice(mBtDevice);
+                    String serviceUUID = mBtDevice.serviceUUID;
+                    String notifyUUID = (mBtDevice instanceof SannuoAnWenBloodSugar) ? mBtDevice.writeCharacterUUID : mBtDevice.serviceUUID;
+
                     BleManager.getInstance().notify(bleDevice,
-                            mBtDevice.serviceUUID,
-                            mBtDevice.notifyCharacterUUID, new BleNotifyCallback() {
+                            serviceUUID,
+                            notifyUUID, new BleNotifyCallback() {
 
                                 @Override
                                 public void onNotifySuccess() {
@@ -464,30 +462,8 @@ public class JamBoHelper {
                                     }
                                 }
                             });
-
-                    //不需要发送命令，配置写特征即可
                     if (mBtDevice.needWriteCommand()) {
-                        if (mBtDevice instanceof SannuoAnWenBloodSugar) {
-                            List<BluetoothGattService> services = gatt.getServices();
-                            for (BluetoothGattService service : services) {
-                                List<BluetoothGattCharacteristic> gattCharacteristics = service.getCharacteristics();
-                                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                                    String uuid = gattCharacteristic.getUuid().toString();
-                                    if (uuid.equalsIgnoreCase(mBtDevice.writeCharacterUUID)) {// 血压测量特征UUID
-                                        if (mBtDevice.needCheckProperties()) {
-                                            final int charaProp = gattCharacteristic.getProperties();
-                                            boolean property_write = (charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) > 0
-                                                    | (charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0;
-                                            if (!property_write) {
-                                                break;
-                                            }
-                                        }
-                                        dealDescriptorWrite(gatt, mBtDevice, gattCharacteristic, true);
-                                        break;
-                                    }
-                                }
-                            }
-                        } else if (mBtDevice instanceof OnCallBloodSugar) {
+                        if (mBtDevice instanceof OnCallBloodSugar) {
                             BleManager.getInstance().write(bleDevice, mBtDevice.serviceUUID, mBtDevice.writeCharacterUUID, ((OnCallBloodSugar) mBtDevice).getStartCommand(), new BleWriteCallback() {
                                 @Override
                                 public void onWriteSuccess(int current, int total, byte[] justWrite) {
@@ -509,25 +485,12 @@ public class JamBoHelper {
         @Override
         public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
             JamBoHelper helper = (JamBoHelper) this.mJamBoHelperWeakReference.get();
-            BleManager.getInstance().stopNotify(this.mBleDevice, mBtDevice.serviceUUID, mBtDevice.notifyCharacterUUID, false);
+            String serviceUUID = mBtDevice.serviceUUID;
+            String notifyUUID = (mBtDevice instanceof SannuoAnWenBloodSugar) ? mBtDevice.writeCharacterUUID : mBtDevice.serviceUUID;
+            BleManager.getInstance().stopNotify(this.mBleDevice, serviceUUID, notifyUUID, false);
             if (helper != null) {
                 helper.setBtDevice(null);
                 helper.onBTStateChanged(BleState.DISCONNECT);
-            }
-        }
-
-
-        private void dealDescriptorWrite(BluetoothGatt gatt, BTDevice btDevice, BluetoothGattCharacteristic characteristic, boolean enable) {
-            gatt.setCharacteristicNotification(characteristic, enable);
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-            if (descriptor != null) {
-                if (enable) {
-                    descriptor.setValue(btDevice.getDescriptorEnabledValue());
-                } else {
-                    descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-                }
-                gatt.writeDescriptor(descriptor);
             }
         }
     }

@@ -3,7 +3,6 @@ package com.jianbao.jamboble.device;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.jianbao.jamboble.BTControlManager;
 import com.jianbao.jamboble.data.BTData;
 
 import java.io.Serializable;
@@ -24,8 +23,6 @@ public abstract class BTDevice implements Serializable {
 	public String notifyCharacterUUID;
 	//
 	public String writeCharacterUUID;
-
-	private BTControlManager mBTControlManager;
 
 	private int bTDeviceID = -1;
 
@@ -77,25 +74,9 @@ public abstract class BTDevice implements Serializable {
 		return BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
 	}
 
-	/**
-	 * 设置写入的Characteristic
-     */
-	public void setBTControlManager(BTControlManager controlManager){
-		mBTControlManager = controlManager;
-	}
 
 	@SuppressLint("NewApi")
 	protected void sendCommand(String command){
-		if (command != null && mBTControlManager != null){
-			mBTControlManager.sendCommand(command);
-		}
-	}
-
-	@SuppressLint("NewApi")
-	protected void sendCommand(byte[] command, int sendDuration){
-		if (command != null && mBTControlManager != null){
-			mBTControlManager.sendCommand(command,sendDuration);
-		}
 	}
 
 	public int getBTDeviceID() {
