@@ -12,6 +12,8 @@ import com.jianbao.jamboble.BleState;
 import com.jianbao.jamboble.callbacks.BleDataCallback;
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.BloodPressureData;
+import com.jianbao.jamboble.data.BloodSugarData;
+import com.jianbao.jamboble.data.UricAcidData;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,8 +30,8 @@ public class BloodActivity extends AppCompatActivity {
         mTvStatus = findViewById(R.id.tv_status);
         mTvValue = findViewById(R.id.tv_value);
         mBtnOpenBle = findViewById(R.id.btn_open_ble);
-        setTitle("血压测量");
-//        setTitle("血糖测量");
+//        setTitle("血压测量");
+        setTitle("血糖测量");
 //        setTitle("尿酸测量");
 
         JamBoHelper.getInstance().setBleDataCallBack(new BleDataCallback() {
@@ -86,15 +88,15 @@ public class BloodActivity extends AppCompatActivity {
                     mTvValue.setText(data.toString());
                 }
                 //血糖
-//                if (data instanceof BloodSugarData) {
+                if (data instanceof BloodSugarData) {
                 //data.bloodSugar 血糖值 单位 Mmol
-//                    mTvValue.setText(data.toString());
-//                }
+                    mTvValue.setText(data.toString());
+                }
                 //尿酸
-//                if (data instanceof UricAcidData) {
+                if (data instanceof UricAcidData) {
                 //data.mUricAcid 尿酸值 单位mmol/L
-//                    mTvValue.setText(data.toString());
-//                }
+                    mTvValue.setText(data.toString());
+                }
             }
 
             @Override
@@ -106,8 +108,8 @@ public class BloodActivity extends AppCompatActivity {
         mBtnOpenBle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JamBoHelper.getInstance().scanBloodPressureDevice();
-//                JamBoHelper.getInstance().scanBloodSugarDevice();
+//                JamBoHelper.getInstance().scanBloodPressureDevice();
+                JamBoHelper.getInstance().scanBloodSugarDevice();
 //                JamBoHelper.getInstance().scanUricAcidDevice();
             }
         });
