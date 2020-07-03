@@ -1,5 +1,4 @@
 # JamBoBleSDK 使用说明
-> 完全抛弃上一版，重写SDK
 
 # 导入 SDK
 https://github.com/chinnsenn/JamBoBleSDK/releases 下载最新版本
@@ -7,9 +6,6 @@ https://github.com/chinnsenn/JamBoBleSDK/releases 下载最新版本
 ```java
 implementation files('libs/jamboble_1.3.aar')
 ```
-依赖库已本地依赖 localbroadcastmanager
-~~由于本地导入 aar 无法传递包中的远程依赖，所以请在主程依赖以下远程库:~~
-~~如遇见其他 SDK 引起的 ClassNotFound 错误，请根据日志判断。~~
 # 初始化 SDK
 在 Application 或者使用之前调用 
 
