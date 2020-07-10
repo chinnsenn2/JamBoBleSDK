@@ -37,7 +37,6 @@ android {
 }
 
 dependencies {
-
     implementation rootProject.ext.dependencies.appcompat
     implementation rootProject.ext.dependencies.design_support
     implementation rootProject.ext.dependencies.core
@@ -50,6 +49,6 @@ dependencies {
     implementation rootProject.ext.dependencies.rxandroid2
     implementation rootProject.ext.dependencies.recyclerview
     implementation rootProject.ext.dependencies.baserecyclerviewadapterhelper
-    implementation files('libs/jamboble_1.6.aar')
+    implementation files('libs/jamboble_1.8.aar')
     annotationProcessor rootProject.ext.dependencies.annotation
 }

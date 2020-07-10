@@ -9,5 +9,6 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         JamBoHelper.getInstance().init(this);
+        JamBoHelper.getInstance().enableDebug(true);
     }
 }
