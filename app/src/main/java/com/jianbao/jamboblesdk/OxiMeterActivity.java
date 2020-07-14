@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.creative.FingerOximeter.FingerOximeter;
+import com.creative.FingerOximeter.IFingerOximeterCallBack;
+import com.creative.base.BaseDate;
 import com.jianbao.fastble.JamBoHelper;
 import com.jianbao.fastble.data.BleDevice;
 import com.jianbao.jamboble.BleState;
@@ -21,7 +23,6 @@ import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.OximeterData;
 import com.jianbao.jamboble.data.SpO2Data;
 import com.jianbao.jamboble.device.BTDevice;
-import com.jianbao.jamboble.device.oximeter.FingerOximeterCallback;
 import com.jianbao.jamboble.device.oximeter.OxiMeterHelper;
 import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 import com.jianbao.jamboble.device.oximeter.OximeterReader;
@@ -91,6 +92,15 @@ public class OxiMeterActivity extends AppCompatActivity {
                         mTvStatus.setText("连接中");
                         break;
                     case DISCONNECT:
+                        mDtBloodOx.cleanWaveData();
+                        pauseRecord();
+                        if (oximeterReader != null) {
+                            oximeterReader.close();
+                        }
+                        if (oximeterWriter != null) {
+                            oximeterWriter.close();
+                        }
+                        JamBoHelper.getInstance().onBTStateChanged(BleState.SCAN_START);
                         mTvStatus.setText("断开连接");
                         break;
                     case CONNECT_FAILED:
@@ -134,7 +144,33 @@ public class OxiMeterActivity extends AppCompatActivity {
                     oximeterReader = new OximeterReader(helper);
                     oximeterWriter = new OximeterWriter(helper);
                     fingerOximeter = new FingerOximeter(oximeterReader, oximeterWriter,
-                            new FingerOximeterCallback(handler, mDtBloodOx));
+                            new IFingerOximeterCallBack(){
+
+                                public void OnGetSpO2Param(int nSpO2, int nPR, float fPI, boolean nStatus, int nMode, float nPower, int powerLevel) {
+                                    SpO2Data mSpO2Data = new SpO2Data();
+                                    mSpO2Data.setSpO2(nSpO2);
+                                    mSpO2Data.setPR(nPR);
+                                    mSpO2Data.setPI(fPI);
+                                    mSpO2Data.setStatus(nStatus);
+                                    mSpO2Data.setMode(nMode);
+                                    mSpO2Data.setPower(nPower);
+                                }
+
+                                @Override
+                                public void OnGetSpO2Wave(List<BaseDate.Wave> list) {
+
+                                }
+
+                                @Override
+                                public void OnGetDeviceVer(String s, String s1, String s2) {
+
+                                }
+
+                                @Override
+                                public void OnConnectLose() {
+
+                                }
+                            });
                     fingerOximeter.Start();
                     fingerOximeter.SetWaveAction(true);
                 }
