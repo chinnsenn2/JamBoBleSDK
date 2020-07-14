@@ -9,8 +9,8 @@ android {
     defaultConfig {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
-        versionCode 4
-        versionName "1.5"
+        versionCode 8
+        versionName "1.8.1"
         multiDexEnabled true
 
         consumerProguardFiles 'consumer-rules.pro'
@@ -55,8 +55,10 @@ dependencies {
     api files('libs/CreativeHealth_pod.jar')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation rootProject.ext.dependencies.logger
+    implementation rootProject.ext.dependencies.appcompat
     implementation rootProject.ext.dependencies.multidex_support
     implementation rootProject.ext.dependencies.gson
     implementation rootProject.ext.dependencies.kotlin
+
     annotationProcessor rootProject.ext.dependencies.annotation
 }

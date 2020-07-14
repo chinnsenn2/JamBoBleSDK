@@ -53,7 +53,7 @@ class JamboQnHelper {
                         }
                 }
             }
-        }?:also {
+        } ?: also {
             Toast.makeText(BleManager.getInstance().context, "请初始化用户数据", Toast.LENGTH_SHORT).show()
         }
 
@@ -72,7 +72,8 @@ class JamboQnHelper {
         return (this.mQNUser != null)
     }
 
-    class JamboQNBleConnectionChangeListener(qnHelper: JamboQnHelper) : QNBleConnectionChangeListener {
+    class JamboQNBleConnectionChangeListener(qnHelper: JamboQnHelper) :
+        QNBleConnectionChangeListener {
         private var mConnectTime = 0
         private val weakReference = WeakReference(qnHelper)
 

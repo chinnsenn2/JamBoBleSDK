@@ -47,7 +47,6 @@ public class FingerOximeterCallback implements IFingerOximeterCallBack {
 
     @Override
     public void OnGetSpO2Param(int nSpO2, int nPR, float fPI, boolean nStatus, int nMode, float nPower, int powerLevel) {
-        System.out.println("nSpO2 = " + nSpO2 + ", nPR = " + nPR + ", fPI = " + fPI + ", nStatus = " + nStatus + ", nMode = " + nMode + ", nPower = " + nPower + ", powerLevel = " + powerLevel);
         Message msg = mHandler.obtainMessage(MSG_DATA_SPO2_PARA);
         Bundle data = new Bundle();
         mSpO2Data.setSpO2(nSpO2);
@@ -75,7 +74,6 @@ public class FingerOximeterCallback implements IFingerOximeterCallBack {
 
     @Override
     public void OnConnectLose() {
-        System.out.println("OnConnectLose");
         LogUtils.i("OnConnectLose");
     }
 }

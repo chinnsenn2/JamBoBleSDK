@@ -92,6 +92,15 @@ public class OxiMeterActivity extends AppCompatActivity {
                         mTvStatus.setText("连接中");
                         break;
                     case DISCONNECT:
+                        mDtBloodOx.cleanWaveData();
+                        pauseRecord();
+                        if (oximeterReader != null) {
+                            oximeterReader.close();
+                        }
+                        if (oximeterWriter != null) {
+                            oximeterWriter.close();
+                        }
+                        JamBoHelper.getInstance().onBTStateChanged(BleState.SCAN_START);
                         mTvStatus.setText("断开连接");
                         break;
                     case CONNECT_FAILED:

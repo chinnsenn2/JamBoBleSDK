@@ -197,18 +197,24 @@ public class FetalHeartHelper {
 
         @Override
         public void onScanFinished(List<BleDevice> scanResultList) {
-            mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.SCAN_STOP);
-            mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTDeviceFound(scanResultList);
+            if (mJamBoHelperWeakReference.get().mFetalHeartBleCallback != null) {
+                mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.SCAN_STOP);
+                mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTDeviceFound(scanResultList);
+            }
         }
 
         @Override
         public void onScanStarted(boolean success) {
-            mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.SCAN_START);
+            if (mJamBoHelperWeakReference.get().mFetalHeartBleCallback != null) {
+                mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.SCAN_START);
+            }
         }
 
         @Override
         public void onScanning(BleDevice bleDevice) {
-            mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTDeviceScanning(bleDevice);
+            if (mJamBoHelperWeakReference.get().mFetalHeartBleCallback != null) {
+                mJamBoHelperWeakReference.get().mFetalHeartBleCallback.onBTDeviceScanning(bleDevice);
+            }
         }
     }
 
@@ -221,14 +227,14 @@ public class FetalHeartHelper {
 
         @Override
         public void dispInfor(@Nullable FetalHeartData data) {
-            if (weakReference.get() != null) {
+            if (weakReference.get() != null && weakReference.get().mFetalHeartBleCallback != null) {
                 weakReference.get().mFetalHeartBleCallback.onBTDataReceived(data);
             }
         }
 
         @Override
         public void dispServiceStatus(int status) {
-            if (weakReference.get() != null) {
+            if (weakReference.get() != null && weakReference.get().mFetalHeartBleCallback != null) {
                 if (status == CONNECT_SUCCESS) {
                     weakReference.get().mFetalHeartBleCallback.onBTStateChanged(BleState.CONNECTED);
                 } else if (status == FetalHeartConnector.CONNECT_FAILED || status == FetalHeartConnector.READ_DATA_FAILED) {

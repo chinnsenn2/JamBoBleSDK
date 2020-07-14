@@ -237,6 +237,9 @@ public class BTDeviceSupport {
      * @return
      */
     public static BTDevice checkSupport(BleDevice device, DeviceType deviceType) {
+        if (TextUtils.isEmpty(device.getName())) {
+            return null;
+        }
         if (deviceType == DeviceType.BLOOD_PRESSURE) {
             if (mBloodPressureDevice.containsKey(device.getName())) {
                 return mBloodPressureDevice.get(device.getName());
@@ -244,8 +247,11 @@ public class BTDeviceSupport {
         }
 
         if (deviceType == DeviceType.BLOOD_SUGAR) {
-            if (mBloodSugarDevice.containsKey(device.getName())) {
-                return mBloodSugarDevice.get(device.getName());
+            Set<Map.Entry<String, BTDevice>> entrySet = mBloodSugarDevice.entrySet();
+            for (Map.Entry<String, BTDevice> entry : entrySet) {
+                if (device.getName().contains(entry.getKey())) {
+                    return mBloodSugarDevice.get(entry.getKey());
+                }
             }
         }
 
@@ -256,44 +262,39 @@ public class BTDeviceSupport {
         }
 
         if (deviceType == DeviceType.URIC_ACID) {
-            if (mUricAcidDevice.containsKey(device.getName())) {
-                return mUricAcidDevice.get(device.getName());
+            Set<Map.Entry<String, BTDevice>> entrySet = mUricAcidDevice.entrySet();
+            for (Map.Entry<String, BTDevice> entry : entrySet) {
+                if (device.getName().contains(entry.getKey())) {
+                    return mUricAcidDevice.get(entry.getKey());
+                }
             }
         }
 
         if (deviceType == DeviceType.WRIST_BANDS) {
             Set<Map.Entry<String, BTDevice>> entryseSet = mWristBandDevice.entrySet();
             for (Map.Entry<String, BTDevice> entry : entryseSet) {
-                if (device.getName() != null && device.getName().contains(entry.getKey())) {
+                if (device.getName().contains(entry.getKey())) {
                     return mWristBandDevice.get(entry.getKey());
                 }
             }
         }
 
         if (deviceType == DeviceType.OXIMETER) {
-            if (device.getName() == null) {
-                return null;
-            }
             Set<Map.Entry<String, BTDevice>> entryseSet = mOximeterDevice.entrySet();
             for (Map.Entry<String, BTDevice> entry : entryseSet) {
-                if (!TextUtils.isEmpty(device.getName())) {
-                    if (TextUtils.equals(entry.getKey(), OximeterDevice.OximeterName.PC_60F.getName())) {
-                        if (device.getName().contains(entry.getKey())) {
-                            return entry.getValue();
-                        }
-                    } else {
-                        if (device.getName().startsWith(entry.getKey())) {
-                            return entry.getValue();
-                        }
+                if (TextUtils.equals(entry.getKey(), OximeterDevice.OximeterName.PC_60F.getName())) {
+                    if (device.getName().contains(entry.getKey())) {
+                        return entry.getValue();
+                    }
+                } else {
+                    if (device.getName().startsWith(entry.getKey())) {
+                        return entry.getValue();
                     }
                 }
             }
         }
 
         if (deviceType == DeviceType.THREEONONE) {
-            if (TextUtils.isEmpty(device.getName())) {
-                return null;
-            }
             Set<Map.Entry<String, BTDevice>> entrySet = mThreeOnOneDevice.entrySet();
             for (Map.Entry<String, BTDevice> entry : entrySet) {
                 if (device.getName().contains(entry.getKey())) {
@@ -305,7 +306,7 @@ public class BTDeviceSupport {
         if (deviceType == DeviceType.FETAL_HEART) {
             Set<Map.Entry<String, BTDevice>> entryseSet = mFetalHeartDevice.entrySet();
             for (Map.Entry<String, BTDevice> entry : entryseSet) {
-                if (!TextUtils.isEmpty(device.getName()) && device.getName().startsWith(entry.getKey())) {
+                if (device.getName().startsWith(entry.getKey())) {
                     return mFetalHeartDevice.get(entry.getKey());
                 }
             }

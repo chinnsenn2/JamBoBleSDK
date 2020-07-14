@@ -220,6 +220,12 @@ public class BleConnector {
         }
         if (mGattService != null && characteristicUUID != null) {
             mCharacteristic = mGattService.getCharacteristic(characteristicUUID);
+//            for (BluetoothGattCharacteristic characteristic : mGattService.getCharacteristics()) {
+//                if (characteristic.getDescriptors().size() > 0) {
+//                    mCharacteristic = characteristic;
+//                    break;
+//                }
+//            }
         }
         return this;
     }

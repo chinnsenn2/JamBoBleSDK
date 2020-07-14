@@ -18,7 +18,7 @@ public class SannuoAnWenBloodSugar extends BTDevice {
         super("三诺血糖仪",
                 "BDE_WEIXIN_TTM",
                 "0000ffb0-0000-1000-8000-00805f9b34fb",
-                "0000ffb1-0000-1000-8000-00805f9b34fb",
+                "0000ffb2-0000-1000-8000-00805f9b34fb",
                 "0000ffb2-0000-1000-8000-00805f9b34fb");
     }
 

@@ -3,7 +3,6 @@ package com.jianbao.fastble;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
-import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.widget.Toast;
@@ -16,7 +15,6 @@ import com.jianbao.fastble.data.BleDevice;
 import com.jianbao.fastble.exception.BleException;
 import com.jianbao.fastble.scan.BleScanRuleConfig;
 import com.jianbao.jamboble.BleState;
-import com.jianbao.jamboble.BuildConfig;
 import com.jianbao.jamboble.callbacks.BleDataCallback;
 import com.jianbao.jamboble.callbacks.IBleStatusCallback;
 import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack;
@@ -27,12 +25,12 @@ import com.jianbao.jamboble.data.UricAcidData;
 import com.jianbao.jamboble.device.BTDevice;
 import com.jianbao.jamboble.device.BTDeviceSupport;
 import com.jianbao.jamboble.device.OnCallBloodSugar;
-import com.jianbao.jamboble.device.SannuoAnWenBloodSugar;
 import com.jianbao.jamboble.device.oximeter.OxiMeterHelper;
 import com.jianbao.jamboble.device.oximeter.OximeterDevice;
 import com.jianbao.jamboble.fatscale.JamboQnHelper;
 import com.jianbao.jamboble.utils.LogUtils;
-import com.yolanda.health.qnblesdk.listener.QNResultCallback;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
 import com.yolanda.health.qnblesdk.out.QNBleApi;
 
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +49,7 @@ public class JamBoHelper {
         private final static JamBoHelper instance = new JamBoHelper();
     }
 
-    static BleScanRuleConfig fatScaleBleScanRuleConfig = new BleScanRuleConfig.Builder()
+    private final static BleScanRuleConfig fatScaleBleScanRuleConfig = new BleScanRuleConfig.Builder()
             .setDeviceName(
                     false,
                     "Yolanda-CS20F2",
@@ -63,7 +61,7 @@ public class JamBoHelper {
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒F
             .build();
 
-    static BleScanRuleConfig bloodPressureBleScanRuleConfig = new BleScanRuleConfig.Builder()
+    private final static BleScanRuleConfig bloodPressureBleScanRuleConfig = new BleScanRuleConfig.Builder()
             .setDeviceName(
                     false,
                     "Technaxx BP",
@@ -76,39 +74,19 @@ public class JamBoHelper {
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build();
-    static BleScanRuleConfig bloodSugarBleScanRuleConfig = new BleScanRuleConfig.Builder()
-            .setDeviceName(
-                    false,
-                    "Sinocare",
-                    "Yuwell Glucose",
-                    "BDE_WEIXIN_TTM",
-                    "c14d2c0a-401f-b7a9-841f-e2e93b80f631",
-                    "BeneCheck"
-            ) // 只扫描指定广播名的设备，可选
-            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
-            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
-            .build();
-    static BleScanRuleConfig uricAcidBleScanRuleConfig = new BleScanRuleConfig.Builder()
-            .setDeviceName(
-                    false,
-                    "Sinocare",
-                    "Yuwell Glucose",
-                    "BDE_WEIXIN_TTM",
-                    "c14d2c0a-401f-b7a9-841f-e2e93b80f631",
-                    "BeneCheck"
-            ) // 只扫描指定广播名的设备，可选
-            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
-            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
-            .build();
-    static BleScanRuleConfig oxiMeterBleScanRuleConfig = new BleScanRuleConfig.Builder()
+    private final static BleScanRuleConfig bloodSugarBleScanRuleConfig = new BleScanRuleConfig.Builder()
             .setDeviceName(
                     true,
-                    "PC-60NW-1", "POD", " POD", "PC-68B", "PC-60F"
+                    "Sinocare",
+                    "Yuwell Glucose",
+                    "BDE_WEIXIN_TTM",
+                    "c14d2c0a-401f-b7a9-841f-e2e93b80f631",
+                    "BeneCheck"
             ) // 只扫描指定广播名的设备，可选
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build();
-    static BleScanRuleConfig threeOnOneBleScanRuleConfig = new BleScanRuleConfig.Builder()
+    private final static BleScanRuleConfig uricAcidBleScanRuleConfig = new BleScanRuleConfig.Builder()
             .setDeviceName(
                     true,
                     "BeneCheck TC-B DONGLE", "BeneCheck"
@@ -116,7 +94,23 @@ public class JamBoHelper {
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build();
-    static BleScanRuleConfig sleepLightBleScanRuleConfig = new BleScanRuleConfig.Builder()
+    private final static BleScanRuleConfig oxiMeterBleScanRuleConfig = new BleScanRuleConfig.Builder()
+            .setDeviceName(
+                    true,
+                    "PC-60NW-1", "POD", " POD", "PC-68B", "PC-60F"
+            ) // 只扫描指定广播名的设备，可选
+            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
+            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
+            .build();
+    private final static BleScanRuleConfig threeOnOneBleScanRuleConfig = new BleScanRuleConfig.Builder()
+            .setDeviceName(
+                    true,
+                    "BeneCheck TC-B DONGLE", "BeneCheck"
+            ) // 只扫描指定广播名的设备，可选
+            .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
+            .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
+            .build();
+    private final static BleScanRuleConfig sleepLightBleScanRuleConfig = new BleScanRuleConfig.Builder()
             .setAutoConnect(true) // 连接时的autoConnect参数，可选，默认false
             .setScanTimeOut(30000) // 扫描超时时间，可选，默认10秒
             .build();
@@ -133,24 +127,31 @@ public class JamBoHelper {
             this.initQnSdk(app);
         }
 
-        JamboQnHelper.getInstance().init(app);
-
-        BleManager.getInstance().enableLog(BuildConfig.DEBUG);
         BleManager.getInstance().setReConnectCount(1);
         BleManager.getInstance().setConnectOverTime(3000L);
         BleManager.getInstance().setOperateTimeout(5000);
         mJamboBleScanCallback = new JamboBleScanCallback(this);
     }
 
+    public final void enableDebug(boolean debug) {
+        if (debug) {
+            Logger.addLogAdapter(new AndroidLogAdapter());
+        }
+        BleManager.getInstance().enableLog(debug);
+        LogUtils.isPrint = debug;
+    }
+
     private int mQnInitTime;
 
     private void initQnSdk(final Application app) {
         String encryptPath = "file:///android_asset/hzyb20160314175503.qn";
-        QNBleApi.getInstance((Context) app).initSdk("hzyb20160314175503", encryptPath,
-                (QNResultCallback) (i, s) -> {
+        QNBleApi.getInstance(app).initSdk("hzyb20160314175503", encryptPath,
+                (i, s) -> {
                     if (i != 0 && mQnInitTime < 3) {
                         mQnInitTime = mQnInitTime + 1;
                         initQnSdk(app);
+                    } else if (i == 0) {
+                        JamboQnHelper.getInstance().init(app);
                     }
                 });
     }
@@ -367,6 +368,7 @@ public class JamBoHelper {
 
         @Override
         public void onScanning(BleDevice bleDevice) {
+            LogUtils.d(bleDevice.toString());
             BTDevice device = BTDeviceSupport.checkSupport(bleDevice, mDeviceType);
             if (device != null) {
                 jamboBleGattCallback.setBtDevice(device);
@@ -421,7 +423,7 @@ public class JamBoHelper {
             if (helper != null) {
                 helper.onBTStateChanged(BleState.CONNECT_FAILED);
             }
-            LogUtils.e(exception != null ? exception.getDescription() : null);
+            LogUtils.e(exception.toString());
         }
 
         @Override
@@ -433,12 +435,11 @@ public class JamBoHelper {
                 if (mBtDevice != null) {
                     helper.setBtDevice(mBtDevice);
                     String serviceUUID = mBtDevice.serviceUUID;
-                    String notifyUUID = (mBtDevice instanceof SannuoAnWenBloodSugar) ? mBtDevice.writeCharacterUUID : mBtDevice.serviceUUID;
+                    String notifyUUID = mBtDevice.notifyCharacterUUID;
 
                     BleManager.getInstance().notify(bleDevice,
                             serviceUUID,
                             notifyUUID, new BleNotifyCallback() {
-
                                 @Override
                                 public void onNotifySuccess() {
                                     if (mBtDevice instanceof OximeterDevice) {
@@ -451,7 +452,7 @@ public class JamBoHelper {
 
                                 @Override
                                 public void onNotifyFailure(BleException exception) {
-                                    LogUtils.e(exception != null ? exception.getDescription() : null);
+                                    LogUtils.e(exception.toString());
                                 }
 
                                 @Override
@@ -462,6 +463,7 @@ public class JamBoHelper {
                                     }
                                 }
                             });
+
                     if (mBtDevice.needWriteCommand()) {
                         if (mBtDevice instanceof OnCallBloodSugar) {
                             BleManager.getInstance().write(bleDevice, mBtDevice.serviceUUID, mBtDevice.writeCharacterUUID, ((OnCallBloodSugar) mBtDevice).getStartCommand(), new BleWriteCallback() {
@@ -484,9 +486,9 @@ public class JamBoHelper {
 
         @Override
         public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
-            JamBoHelper helper = (JamBoHelper) this.mJamBoHelperWeakReference.get();
+            JamBoHelper helper = this.mJamBoHelperWeakReference.get();
             String serviceUUID = mBtDevice.serviceUUID;
-            String notifyUUID = (mBtDevice instanceof SannuoAnWenBloodSugar) ? mBtDevice.writeCharacterUUID : mBtDevice.serviceUUID;
+            String notifyUUID = mBtDevice.notifyCharacterUUID;
             BleManager.getInstance().stopNotify(this.mBleDevice, serviceUUID, notifyUUID, false);
             if (helper != null) {
                 helper.setBtDevice(null);

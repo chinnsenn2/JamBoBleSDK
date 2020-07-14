@@ -8,6 +8,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         JamBoHelper.getInstance().init(this)
+        JamBoHelper.getInstance().enableDebug(true)
     }
 
 }

@@ -66,7 +66,6 @@ public class FetalHeartActivity extends AppCompatActivity {
                         ((Button) view).setText("停止录制");
                         //录音,返回录音文件路径
                         String recordPath = FetalHeartHelper.getInstance().startRecord();
-                        System.out.println(recordPath);
                     }
                 }
             }

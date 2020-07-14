@@ -75,7 +75,12 @@ public <fields>;
 public <methods>;
 
 }
+
+-keep class com.qingniu.scale.measure.broadcast.ScaleBroadcastService{*;}
+-keep class com.qingniu.scale.measure.ble.ScaleBleService{*;}
+-keep class com.qingniu.qnble.scanner.BleScanService{*;}
 -keep class com.qingniu.scale.model.BleScaleData{*;}
+
 -keep class * implements android.os.Parcelable{ # 保持Parcelable不被混淆
     public static final android.os.Parcelable.Creator *;
 }

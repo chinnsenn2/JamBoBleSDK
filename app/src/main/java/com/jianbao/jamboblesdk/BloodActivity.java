@@ -31,8 +31,8 @@ public class BloodActivity extends AppCompatActivity {
         mTvValue = findViewById(R.id.tv_value);
         mBtnOpenBle = findViewById(R.id.btn_open_ble);
 //        setTitle("血压测量");
-        setTitle("血糖测量");
-//        setTitle("尿酸测量");
+//        setTitle("血糖测量");
+        setTitle("尿酸测量");
 
         JamBoHelper.getInstance().setBleDataCallBack(new BleDataCallback() {
             @Override
