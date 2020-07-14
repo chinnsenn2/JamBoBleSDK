@@ -4,13 +4,15 @@
 https://github.com/chinnsenn/JamBoBleSDK/releases 下载最新版本
 将 aar 文件放入 ../app/libs 文件夹下,并在 build.gradle
 ```java
-implementation files('libs/jamboble_1.3.aar')
+implementation files('libs/jamboble_[lastest_version].aar')
 ```
 # 初始化 SDK
 在 Application 或者使用之前调用 
 
 ```Java
 JamBoHelper.getInstance().init(this) 
+//开启 Log
+JamBoHelper.getInstance().enableDebug(true);
 ```
 
 为了不持有 context ，引起各种未知的问题，库中不再处理权限请求。使用前先自行动态请求权限。

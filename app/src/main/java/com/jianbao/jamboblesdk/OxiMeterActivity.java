@@ -252,6 +252,14 @@ public class OxiMeterActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        mDtBloodOx.cleanWaveData();
+        pauseRecord();
+        if (oximeterReader != null) {
+            oximeterReader.close();
+        }
+        if (oximeterWriter != null) {
+            oximeterWriter.close();
+        }
         JamBoHelper.getInstance().destroy();
         super.onDestroy();
     }
