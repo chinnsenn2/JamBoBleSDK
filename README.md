@@ -13,55 +13,6 @@ implementation files('libs/jamboble_[lastest_version].aar')
 JamBoHelper.getInstance().init(this) 
 //开启 Log
 JamBoHelper.getInstance().enableDebug(true);
-```
-
-为了不持有 context ，引起各种未知的问题，库中不再处理权限请求。使用前先自行动态请求权限。
-代码请可以参考这里 [MainActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/MainActivity.java)
-
-> 使用蓝牙功能，必须先声明蓝牙相关的权限。Android 6.0以上的系统，需要额外申请位置相关的权限，并且是危险权限建议在运行时动态获取。为使使用更灵活，FastBle库中并不包含权限相关的操作，使用者根据程序的实际情况在外层自行嵌套。示例代码中有相关代码演示，供参考。 
-
-# 1.3版本 更新胎心检测功能
-### 扫描胎心设备
-```java
-FetalHeartHelper.getInstance().scanFetalHeartDevice();
-```
-### 扫描设备回调
-```java
-//扫描胎心设备不会自动连接，会返回扫描到的符合条件的设备
-FetalHeartHelper.getInstance().setFetalHeartBleCallback(new FetalHeartBleCallback() {
-            //扫描完成后返回所有胎心设备列表
-            @Override
-            public void onBTDeviceFound(List<BleDevice> list) {
-            
-            }
-
-            @Override
-            //扫描中实时返回扫描到的胎心设备
-            public void onBTDeviceScanning(BleDevice device) {
-                mPbLoading.setVisibility(View.GONE);
-                devicesAdapter.addDevice(device);
-            }
-//省略其余代码...
-}
-```
-### 连接设备
-```java
-FetalHeartHelper.getInstance().connectDevice(device);
-```
-### 断开连接
-```java
-FetalHeartHelper.getInstance().disconnect();
-```
-### 录音
-```java
-//返回音频存放路径
-String path = FetalHeartHelper.getInstance().startRecord();
-```
-### 停止录音
-```java
-FetalHeartHelper.getInstance().finishRecord();
-```
-更多代码详见 [FetalHeartActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/FetalHeartActivity.java)
 # 体脂测量
 ```java
 //因为体脂测量用到其他 SDK，必须传入用户数据
