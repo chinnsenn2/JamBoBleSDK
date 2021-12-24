@@ -56,6 +56,3 @@ JamBoHelper.getInstance().scanOxiMeterDevice()
 ```java
 JamBoHelper.getInstance().destroy()
 ```
-# What's Next
-- 支持配置不自动连接设备，手动连接
-...

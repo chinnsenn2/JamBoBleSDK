@@ -30,8 +30,8 @@ public class BloodActivity extends AppCompatActivity {
         mTvStatus = findViewById(R.id.tv_status);
         mTvValue = findViewById(R.id.tv_value);
         mBtnOpenBle = findViewById(R.id.btn_open_ble);
-//        setTitle("血压测量");
-        setTitle("血糖测量");
+        setTitle("血压测量");
+//        setTitle("血糖测量");
 //        setTitle("尿酸测量");
 
         JamBoHelper.getInstance().setBleDataCallBack(new BleDataCallback() {
@@ -108,8 +108,8 @@ public class BloodActivity extends AppCompatActivity {
         mBtnOpenBle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                JamBoHelper.getInstance().scanBloodPressureDevice();
-                JamBoHelper.getInstance().scanBloodSugarDevice();
+                    JamBoHelper.getInstance().scanBloodPressureDevice();
+//                JamBoHelper.getInstance().scanBloodSugarDevice();
 //                JamBoHelper.getInstance().scanUricAcidDevice();
             }
         });
