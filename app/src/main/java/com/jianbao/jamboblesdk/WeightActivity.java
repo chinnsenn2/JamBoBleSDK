@@ -14,6 +14,7 @@ import com.jianbao.jamboble.callbacks.UnSteadyValueCallBack;
 import com.jianbao.jamboble.data.BTData;
 import com.jianbao.jamboble.data.FatScaleData;
 import com.jianbao.jamboble.data.QnUser;
+import com.orhanobut.logger.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +25,8 @@ public class WeightActivity extends AppCompatActivity {
     private TextView mTvValueRealtime;
     private TextView mTvValue;
     private Button mBtnOpenBle;
+    private Button mBtnCheckConnect;
+    private Button mBtnDisconnect;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,7 +37,20 @@ public class WeightActivity extends AppCompatActivity {
         mTvValueRealtime = findViewById(R.id.tv_value_realtime);
         mTvValue = findViewById(R.id.tv_value);
         mBtnOpenBle = findViewById(R.id.btn_open_ble);
-
+        mBtnCheckConnect = findViewById(R.id.btn_check_connect);
+        mBtnDisconnect = findViewById(R.id.btn_disconnect);
+        mBtnDisconnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JamBoHelper.getInstance().disconnectDevice(JamBoHelper.getInstance().getConnectDeviceMacAddress());
+            }
+        });
+        mBtnCheckConnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Logger.d("isconnect = " + JamBoHelper.getInstance().isConnected(JamBoHelper.getInstance().getConnectDeviceMacAddress()));
+            }
+        });
         mBtnOpenBle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,6 +89,7 @@ public class WeightActivity extends AppCompatActivity {
                         break;
                     case SCAN_STOP:
                         mBtnOpenBle.setText("开始扫描");
+                        mTvStatus.setText("未扫描");
                         break;
                     //连接成功
                     case CONNECTED:

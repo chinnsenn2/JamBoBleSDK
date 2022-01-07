@@ -106,8 +106,31 @@
         android:textColor="#fff"
         android:background="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btn_check_connect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/v_bt_data" />
+
+    <Button
+        android:id="@+id/btn_check_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="查询是否连接"
+        android:textColor="#fff"
+        android:background="@color/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_open_ble"
+        app:layout_constraintStart_toEndOf="@id/btn_open_ble" />
+
+    <Button
+        android:id="@+id/btn_disconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="断开连接"
+        android:textColor="#fff"
+        android:layout_marginTop="10dp"
+        android:background="@color/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/btn_open_ble"
+        app:layout_constraintStart_toStartOf="@id/btn_open_ble" />
+
 
 </android.support.constraint.ConstraintLayout>
