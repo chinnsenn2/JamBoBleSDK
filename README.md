@@ -30,6 +30,20 @@ JamBoHelper.getInstance().scanFatScaleDevice();
 //停止扫描
 JamBoHelper.getInstance().stopScan();
 ```
+# 1.9.0 更新
+`新增获取已连接设备的 mac 地址，主动断开连接设备，查询连接状态`
+
+```
+//获取已连接设备的 mac 地址，如无连接设备则返回空字符串
+JamBoHelper.getInstance().getConnectDeviceMacAddress()
+
+//断开已连接设备
+JamBoHelper.getInstance().disconnectDevice(String mac)
+
+//查询是否连接设备
+JamBoHelper.getInstance().isConnected(String mac)
+```
+
 长度原因，其余代码参考 [WeightActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/WeightActivity.java)
 # 血压、血糖、尿酸测量（三者大同小异）
 ```java
@@ -280,3 +294,15 @@ if (boneValue < indicator1){
 
 ## 基础代谢率
 无
+
+## 血糖
+
+血糖值是针对糖尿病一个很重要的指标，所以对很多糖尿病人来说，就很关心了，其实在诊断糖尿病时要从空腹血糖值和饭后两个小时血糖值两方面来判断。
+空腹正常血糖值：空腹血糖正常范围是 2.8-6.1mmol/L，高于7.0mmol/L诊断为糖尿病。
+饭后正常血糖值：正常餐后血糖范围2.8-7.8mmol/L。高于11.1mmol/L诊断为糖尿病。
+
+## 尿酸
+
+尿酸值是作为痛风病一个关键指标，测量上一般要求晚上八点后禁食禁水，次日晨起后空腹测量，以确保身体内一些成分的理化性质不发生改变，检验结果不受外来干扰，以达到准确！
+
+男性正常范围：0.2-0.42mmol/L，高于0.42mmol/L为高血尿酸;女性正常范围：0.14-0.36mmol/L，高于0.36mmol/L为高血尿酸；
