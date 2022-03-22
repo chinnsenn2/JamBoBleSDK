@@ -1,7 +1,7 @@
 # JamBoBleSDK 使用说明
 
 # 导入 SDK
-https://github.com/chinnsenn/JamBoBleSDK/releases 下载最新版本
+项目中 /app/libs/jamboble_1.9.0.aar 下载最新版本
 将 aar 文件放入 ../app/libs 文件夹下,并在 build.gradle
 ```java
 implementation files('libs/jamboble_[lastest_version].aar')
@@ -44,7 +44,7 @@ JamBoHelper.getInstance().disconnectDevice(String mac)
 JamBoHelper.getInstance().isConnected(String mac)
 ```
 
-长度原因，其余代码参考 [WeightActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/WeightActivity.java)
+长度原因，其余代码参考 项目中 WeightActivity
 # 血压、血糖、尿酸测量（三者大同小异）
 ```java
 //血压
@@ -54,23 +54,22 @@ JamBoHelper.getInstance().scanBloodSugarDevice()
 //尿酸
 JamBoHelper.getInstance().scanUricAcidDevice()
 ```
-其余代码参考 [BloodActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/BloodActivity.java)
+其余代码参考 项目中 BloodActivity
 # 血液三合一设备
 ```java
 JamBoHelper.getInstance().scanThreeOnOneDevice()
 ```
-其余代码参考 [BloodThreeOnOneActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/BloodThreeOnOneActivity.java)
+其余代码参考项目中  BloodThreeOnOneActivity
 # 血氧测量
 ```java
 //血氧测量
 JamBoHelper.getInstance().scanOxiMeterDevice()
 ```
-血氧测量提供类心电图绘制，代码参考 [OxiMeterActivity](https://github.com/chinnsenn/JamBoBleSDK/blob/sdk/app/src/main/java/com/jianbao/jamboblesdk/OxiMeterActivity.java)
+血氧测量提供类心电图绘制，代码参考 OxiMeterActivity
 # 释放资源
 ```java
 JamBoHelper.getInstance().destroy()
 ```
-
 
 # 体脂称数据参考
 
